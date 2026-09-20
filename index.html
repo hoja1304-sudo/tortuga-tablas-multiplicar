@@ -811,8 +811,26 @@
     document.querySelectorAll('#problemas .ptab').forEach(x=>x.classList.toggle('sel',x.dataset.ptab===t));
     $('psecProb').classList.toggle('hidden',t!=='prob'); $('psecSol').classList.toggle('hidden',t!=='sol');
   }
+  function abrirSolucion(){
+    if(!actual) return;
+    const pasos=actual.pasos.map(s=>`<li>${s}</li>`).join("");
+    const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Solución paso a paso</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;max-width:720px;margin:24px auto;padding:0 16px;color:#111;}
+h1{font-size:15pt;} h2{font-size:13pt;} .enun{border-left:4px solid #d4a300;background:#fff8dc;padding:12px 14px;border-radius:8px;}
+ol{line-height:1.8;} .fig{margin:10px 0;text-align:center;} .resp{background:#e7f8ee;border:1px solid #3ddc84;border-radius:8px;padding:10px 12px;font-weight:bold;margin-top:14px;}
+.grid-fig{display:inline-block;margin:0 6px;text-align:center;vertical-align:top;} .grid-fig svg{border:1px solid #ccc;border-radius:6px;} .grid-fig span{display:block;font-size:10pt;margin-top:3px;}</style></head>
+<body><h1>Solución paso a paso</h1><div class="fig">${actual.figura||""}</div>
+<p class="enun">${actual.texto}</p><h2>Pasos</h2><ol>${pasos}</ol>
+<p class="resp">Respuesta correcta: ${actual.correcta}${actual.unidad?(' '+actual.unidad):''}</p></body></html>`;
+    const url=URL.createObjectURL(new Blob([doc],{type:"text/html;charset=utf-8"}));
+    const w=window.open(url,'_blank');
+    if(!w){ verTab('sol'); }   // si el navegador bloquea la pestaña, se muestra en la misma
+    setTimeout(()=>URL.revokeObjectURL(url),6000);
+  }
   document.querySelectorAll('#problemas .ptab').forEach(tb=>tb.addEventListener('click',()=>{
-    if(tb.dataset.ptab==='sol' && tb.classList.contains('lock')) return; verTab(tb.dataset.ptab); }));
+    if(tb.dataset.ptab==='sol'){ if(tb.classList.contains('lock')) return; abrirSolucion(); return; }
+    verTab(tb.dataset.ptab);
+  }));
 
   // Fuegos artificiales
   const fx=$('pfx'), fctx=fx.getContext('2d'); let parts=[], fxOn=false, fxLast=0;
