@@ -394,13 +394,8 @@
           flash("¡"+tabla+" × "+currentM+" = "+objetivoVal+"! ✓","bien"); actualizarHUD();
           if(comidos>=PRODS){ completarTabla(); return; }
           currentM++; nuevaOperacion();
-        } else if(escenario!=="laberinto" && coolMal<=0){
-          // En el laberinto la fruta incorrecta se ignora (no se puede esquivar en los pasillos).
-          // En el paisaje sí penaliza, porque ahí se puede evitar.
-          coolMal=650; penal+=2000; sMal(); flash("Esa es "+f.valor+" · +2s","mal");
-          const a=Math.atan2(turtle.y-fyp,turtle.x-fxp), pdx=Math.cos(a)*turtle.r, pdy=Math.sin(a)*turtle.r;
-          turtle.x+=pdx; turtle.y+=pdy;
         }
+        // La fruta incorrecta se ignora en ambos escenarios: sin mensaje ni penalización.
       }
     }
     actualizarHUD();
