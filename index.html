@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tortuga de las tablas de multiplicar</title>
+<style>
+  :root{ --amarillo:#ffd400; --verde:#3ddc84; --rojo:#ff4b57; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#1b6ea8 0%,#0e3c66 55%,#07223d 100%);
+    color:#fff;min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow:hidden;user-select:none;}
+  header{width:100%;text-align:center;padding:6px 10px 2px;}
+  h1{margin:0;font-size:clamp(16px,4.2vw,27px);letter-spacing:.5px;color:var(--amarillo);text-shadow:0 3px 0 #b58a00,0 0 18px rgba(255,212,0,.5);}
+
+  #hud{width:min(97vw,980px);display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:stretch;margin:6px auto 4px;}
+  .panel{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);border-radius:14px;padding:6px 12px;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px;backdrop-filter:blur(3px);}
+  .panel.hidden{display:none;}
+  .panel .lbl{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:1px;}
+  .panel .val{font-size:20px;font-weight:bold;line-height:1.1;}
+  #reto{background:linear-gradient(180deg,#1d7a3f,#0f5228);border:3px solid var(--amarillo);box-shadow:0 0 20px rgba(255,212,0,.35);min-width:210px;flex-direction:row;gap:12px;}
+  #reto .txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;}
+  #reto .lbl2{font-size:11px;opacity:.9;text-transform:uppercase;letter-spacing:1px;}
+  #operacion{font-size:clamp(22px,6vw,34px);font-weight:bold;color:var(--amarillo);text-shadow:0 2px 8px rgba(0,0,0,.4);}
+  #btnAudio{background:var(--amarillo);color:#5a3d00;border:none;width:52px;height:52px;border-radius:50%;font-size:24px;cursor:pointer;box-shadow:0 4px 0 #b58a00;transition:transform .1s;flex-shrink:0;}
+  #btnAudio:active{transform:translateY(3px);box-shadow:0 1px 0 #b58a00;}
+  #panelVoz{cursor:pointer;border-color:rgba(61,220,132,.7);background:rgba(61,220,132,.14);box-shadow:0 3px 0 rgba(30,156,88,.55);transition:transform .1s,box-shadow .1s,background .12s,border-color .12s;}
+  #panelVoz:hover{background:rgba(61,220,132,.24);}
+  #panelVoz:active{transform:translateY(3px);box-shadow:0 0 0 rgba(30,156,88,.55);}
+  #panelVoz .val{color:var(--verde);}
+  #panelVoz.off{border-color:rgba(255,75,87,.7);background:rgba(255,75,87,.14);box-shadow:0 3px 0 rgba(160,30,40,.55);}
+  #panelVoz.off:hover{background:rgba(255,75,87,.24);}
+  #panelVoz.off .val{color:var(--rojo);}
+
+  #wrap{position:relative;width:min(97vw,980px);flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:4px 0 10px;min-height:0;}
+  #tablero{position:relative;border:4px solid #2b7fce;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.5);touch-action:none;display:block;max-width:100%;max-height:100%;cursor:none;background:#8ed0ff;}
+
+  #flash{position:absolute;top:9%;left:50%;transform:translateX(-50%);font-size:clamp(20px,6vw,40px);font-weight:bold;padding:8px 22px;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap;z-index:5;}
+  #flash.show{opacity:1;transform:translateX(-50%) scale(1.05);}
+  #flash.bien{background:rgba(61,220,132,.95);color:#043a1c;box-shadow:0 8px 30px rgba(61,220,132,.5);}
+  #flash.mal{background:rgba(255,75,87,.95);color:#4a0006;box-shadow:0 8px 30px rgba(255,75,87,.5);}
+
+  .overlay{position:absolute;inset:0;background:rgba(4,20,40,.88);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:13px;padding:16px;z-index:10;backdrop-filter:blur(2px);overflow:auto;}
+  .overlay.hidden{display:none;}
+  .overlay h2{margin:0;font-size:clamp(20px,5vw,34px);color:var(--amarillo);text-shadow:0 3px 0 #b58a00;}
+  .overlay p{margin:0;font-size:clamp(13px,3.3vw,16px);max-width:560px;line-height:1.45;opacity:.95;}
+  .btn{background:var(--amarillo);color:#4a3400;border:none;font-size:clamp(16px,4.4vw,22px);font-weight:bold;padding:11px 26px;border-radius:40px;cursor:pointer;box-shadow:0 6px 0 #b58a00;transition:transform .1s;letter-spacing:.5px;}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b58a00;}
+  .btn.verde{background:var(--verde);color:#043a1c;box-shadow:0 6px 0 #1e9c58;} .btn.verde:active{box-shadow:0 2px 0 #1e9c58;}
+  .btn.gris{background:rgba(255,255,255,.85);color:#222;box-shadow:0 6px 0 #8a8a8a;font-size:clamp(13px,3.4vw,16px);padding:8px 18px;} .btn.gris:active{box-shadow:0 2px 0 #8a8a8a;}
+  .escenarios{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:-2px;}
+  .escLbl{font-size:14px;opacity:.85;}
+  .escbtn{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:7px 16px;font-size:15px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s,border-color .12s;}
+  .escbtn:hover{transform:translateY(-2px);}
+  .escbtn.sel{border-color:var(--amarillo);background:rgba(255,212,0,.18);color:var(--amarillo);}
+  #gridTablas{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;width:min(94vw,560px);max-height:44vh;overflow:auto;padding:4px 2px;}
+  .tabchip{background:rgba(255,255,255,.08);border:2px solid rgba(61,220,132,.6);border-radius:12px;color:#fff;padding:9px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .1s,background .1s;}
+  .tabchip:hover{transform:translateY(-2px);background:rgba(61,220,132,.15);}
+  .tabchip .tl{font-size:17px;font-weight:bold;}
+  .tabchip .tr{font-size:10.5px;color:#ffd400;font-weight:bold;min-height:13px;}
+  .fila-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .mini{font-size:13px;opacity:.85;margin-top:2px;max-width:560px;}
+  .credito{margin-top:10px;font-size:12px;line-height:1.55;color:rgba(255,255,255,.72);font-style:italic;letter-spacing:.3px;}
+  .credito b{color:var(--amarillo);font-weight:bold;font-style:normal;}
+  footer{font-size:11px;opacity:.5;padding:2px 0 6px;text-align:center;}
+</style>
+</head>
+<body>
+
+<header><h1>🐢 Tortuga de las tablas de multiplicar</h1></header>
+
+<div id="hud">
+  <div class="panel" id="reto">
+    <button id="btnAudio" title="Escuchar la operación">🔊</button>
+    <div class="txt"><span class="lbl2">Come la fruta con el resultado</span><span id="operacion">— × — = ?</span></div>
+  </div>
+  <div class="panel"><span class="lbl">Progreso</span><span class="val" id="progreso">0/10</span></div>
+  <div class="panel"><span class="lbl">⏱️ Tiempo</span><span class="val" id="tiempo">00:00</span></div>
+  <div class="panel" id="panelVoz" title="Activar/desactivar la voz"><span class="lbl">🔊 Voz</span><span class="val" id="vozEstado">ON</span></div>
+  <div class="panel"><span class="lbl">🏆 Récord</span><span class="val" id="record">—</span></div>
+</div>
+
+<div id="wrap">
+  <canvas id="tablero"></canvas>
+  <div id="flash"></div>
+
+  <!-- Menú: elegir tabla -->
+  <div class="overlay" id="ovMenu">
+    <h2>Elige la tabla de multiplicar</h2>
+    <div class="escenarios">
+      <span class="escLbl">Escenario:</span>
+      <button class="escbtn sel" data-esc="paisaje">🏞️ Paisaje</button>
+      <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
+    </div>
+    <div id="gridTablas"></div>
+    <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
+    <div class="mini">Mueve la 🐢 con el <b>mouse</b> (o el dedo) hacia adelante o hacia arriba y cómete la fruta con el resultado. Con la voz <b>activada</b> escuchas la operación; <b>desactivada</b>, la lee el niño.</div>
+    <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
+  </div>
+
+  <!-- Fin de tabla -->
+  <div class="overlay hidden" id="ovFin">
+    <h2 id="finTitulo">🎉 ¡Tabla completa!</h2>
+    <p id="finTexto"></p>
+    <div class="fila-btns">
+      <button class="btn verde" id="btnSiguiente">➡️ Siguiente tabla</button>
+      <button class="btn gris" id="btnRepetir">🔁 Repetir</button>
+      <button class="btn gris" id="btnMenu">🏠 Menú</button>
+    </div>
+  </div>
+</div>
+
+<footer>Recurso educativo · Primaria · Tablas de multiplicar con la tortuga</footer>
+
+<script>
+(function(){
+  "use strict";
+  const canvas=document.getElementById('tablero');
+  const ctx=canvas.getContext('2d');
+  const TABLAS_MIN=1, TABLAS_MAX=12, PRODS=10;
+
+  let W=800,H=450,DPR=1,worldW=1920,camX=0;
+  const WORLDMULT=2.4;      // el mundo es más ancho que la pantalla → paisaje con desplazamiento
+  let estado="menu";        // menu | jugando | fin
+  let tabla=2, currentM=1, objetivoVal=0, comidos=0;
+  let tInicio=0,tActual=0,penal=0,coolMal=0;
+  let frutas=[];
+  const FRUTA_COL=["#ff4b57","#ff9d3d","#c084fc","#ffd400","#7bd64f","#ff7bac"];
+
+  const turtle={x:100,y:250,r:34,face:1,anim:0};
+  let mouse={x:100,y:250,active:false};
+  let nubes=[], last=0;
+  let escenario="paisaje";   // paisaje | laberinto
+  let paredes=[];            // laberinto: paredes en fracciones {x,y,w,h}
+  let mazeMeta=null;
+  let frR=30;                // radio de fruta actual
+
+  // ---------- Número a texto (0-199) ----------
+  const U=["cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince",
+           "dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiuno","veintidós","veintitrés","veinticuatro","veinticinco",
+           "veintiséis","veintisiete","veintiocho","veintinueve"];
+  const DEC={30:"treinta",40:"cuarenta",50:"cincuenta",60:"sesenta",70:"setenta",80:"ochenta",90:"noventa"};
+  function numeroATexto(n){
+    if(n<30) return U[n];
+    if(n<100){ const d=Math.floor(n/10)*10, r=n%10; return r===0?DEC[d]:DEC[d]+" y "+U[r]; }
+    if(n===100) return "cien";
+    if(n<200){ return "ciento "+numeroATexto(n-100); }
+    return String(n);
+  }
+
+  // ---------- Audio ----------
+  let actx=null;
+  function initAudio(){ if(actx) return; try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){actx=null;} }
+  function beep(f,d,t,v){ if(!actx) return;
+    try{ const o=actx.createOscillator(),g=actx.createGain(); o.type=t||"sine"; o.frequency.value=f; g.gain.value=0.0001;
+      o.connect(g); g.connect(actx.destination); const n=actx.currentTime;
+      g.gain.exponentialRampToValueAtTime(v||0.25,n+0.01); g.gain.exponentialRampToValueAtTime(0.0001,n+(d||0.15));
+      o.start(n); o.stop(n+(d||0.15)); }catch(e){} }
+  function sBien(){ beep(660,0.09,"square",0.25); setTimeout(()=>beep(880,0.12,"square",0.25),90); setTimeout(()=>beep(1175,0.14,"square",0.22),200); }
+  function sMal(){ beep(200,0.18,"sawtooth",0.25); setTimeout(()=>beep(150,0.22,"sawtooth",0.22),120); }
+  function sWaka(){ beep(520,0.05,"square",0.12); }
+  function sWin(){ [523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,0.16,"square",0.25),i*130)); }
+
+  // ---------- Voz ----------
+  let vozES=null, vozLang="es-MX";
+  function cargarVoz(){
+    if(!('speechSynthesis' in window)) return;
+    const v=speechSynthesis.getVoices();
+    const pref=["es-mx","es-419","es-us","es-co","es-cr","es-ar","es-cl","es-pe","es-ve","es-gt"];
+    vozES = v.find(x=> pref.some(p=> x.lang.toLowerCase().replace('_','-').startsWith(p)))
+         || v.find(x=>/latin|latino|m[eé]xic|estados unidos|america/i.test(x.name))
+         || v.find(x=>/^es/i.test(x.lang) && !/es[-_]es/i.test(x.lang))   // cualquier español que NO sea de España
+         || v.find(x=>/es[-_]/i.test(x.lang))
+         || v.find(x=>/spanish|español/i.test(x.name)) || null;
+    vozLang = vozES ? vozES.lang : "es-MX";
+  }
+  if('speechSynthesis' in window){ cargarVoz(); speechSynthesis.onvoiceschanged=cargarVoz; }
+  function decir(txt){ if(!vozOn || !('speechSynthesis' in window)) return;
+    try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang=vozLang;
+      if(vozES)u.voice=vozES; u.rate=0.92; u.pitch=1.05; speechSynthesis.speak(u); }catch(e){} }
+  function decirOperacion(){ decir(numeroATexto(tabla)+" por "+numeroATexto(currentM)); }
+
+  // ---------- Voz on/off ----------
+  function leerVozPref(){ try{ const v=localStorage.getItem("tortuga_voz_on"); return v===null?true:v==="1"; }catch(e){ return true; } }
+  function guardarVozPref(b){ try{ localStorage.setItem("tortuga_voz_on", b?"1":"0"); }catch(e){} }
+  let vozOn=leerVozPref();
+  function pintarVoz(){
+    document.getElementById('vozEstado').textContent=vozOn?"ON":"OFF";
+    document.getElementById('panelVoz').classList.toggle('off',!vozOn);
+    document.getElementById('btnVozMenu').textContent=vozOn?"🔊 Voz de la operación: Activada":"🔇 Voz de la operación: Desactivada";
+    const b=document.getElementById('btnAudio'); b.textContent=vozOn?"🔊":"🔇"; b.style.opacity=vozOn?"1":"0.45";
+  }
+  function toggleVoz(){ vozOn=!vozOn; guardarVozPref(vozOn); pintarVoz(); if(vozOn && estado==="jugando") decirOperacion(); }
+
+  // ---------- Récord por tabla ----------
+  function fmt(ms){ const s=Math.floor(ms/1000),m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+":"+String(r).padStart(2,'0'); }
+  function recKey(N){ return "tortuga_tabla_rec_"+escenario+"_"+N; }
+  function leerRec(N){ try{ const v=localStorage.getItem(recKey(N)); return v?parseInt(v,10):null; }catch(e){ return null; } }
+  function guardarRec(N,ms){ try{ localStorage.setItem(recKey(N),String(ms)); }catch(e){} }
+  function pintarRecHUD(){ const r=leerRec(tabla); document.getElementById('record').textContent=r?fmt(r):"—"; }
+
+  // ---------- Resize (paisaje 16:9) ----------
+  function resize(){
+    const wrap=document.getElementById('wrap');
+    const availW=wrap.clientWidth, availH=wrap.clientHeight, aspect=16/9;
+    const oldW=W, oldH=H;
+    let w=availW, h=w/aspect;
+    if(h>availH){ h=availH; w=h*aspect; }
+    w=Math.min(w,1024); h=w/aspect;
+    W=Math.round(w); H=Math.round(h);
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    canvas.style.width=W+"px"; canvas.style.height=H+"px";
+    canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    worldW = (escenario==="laberinto") ? W : W*WORLDMULT;
+    if(oldW>0){ turtle.x*=W/oldW; turtle.y*=H/oldH; }   // el 16:9 se conserva → todo escala igual
+    camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
+    if(escenario==="laberinto" && mazeMeta){ turtle.r=mazeMeta.cellMinFrac*Math.min(W,H)*0.28; frR=mazeMeta.cellMinFrac*Math.min(W,H)*0.30; }
+    else { turtle.r=Math.max(22,H*0.085); frR=H*0.062; }
+  }
+  window.addEventListener('resize',resize);
+
+  const groundFrac=0.80;
+  function fruitR(){ return H*0.062; }
+
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+  // ---------- Generar nivel ----------
+  function generarNivel(N){
+    frutas=[];
+    const prod=[]; for(let m=1;m<=PRODS;m++) prod.push(N*m); shuffle(prod);
+    for(let i=0;i<PRODS;i++){
+      const fx=0.09+0.82*(i/(PRODS-1));
+      const cat=["g","m","h","g","m"][Math.floor(Math.random()*5)];
+      let fy; if(cat==="g") fy=0.71; else if(cat==="m") fy=0.50; else fy=0.30;
+      frutas.push({ valor:prod[i], fx, fy, cat, tipo:i%FRUTA_COL.length, comida:false, pop:0, bob:Math.random()*6.28 });
+    }
+  }
+
+  // ---------- Laberinto (setos) ----------
+  function generarLaberinto(N){
+    paredes=[]; frutas=[];
+    const margin=Math.min(W,H)*0.05;
+    const cellObj=Math.min(W,H)*0.155;
+    const gc=Math.max(5,Math.round((W-2*margin)/cellObj));
+    const gr=Math.max(3,Math.round((H-2*margin)/cellObj));
+    const cw=(W-2*margin)/gc, ch=(H-2*margin)/gr;
+    const cellMin=Math.min(cw,ch), cellMinFrac=cellMin/Math.min(W,H);
+    const t=cellMin*0.16;
+    turtle.r=cellMin*0.28; frR=cellMin*0.30;
+    mazeMeta={margin, gc, gr, cw, ch, t, cellMinFrac};
+    // celdas con muros
+    const cells=[]; for(let i=0;i<gc*gr;i++) cells.push({t:true,r:true,b:true,l:true,v:false});
+    const id=(x,y)=>y*gc+x;
+    let cx=0,cy=0,vis=1; const tot=gc*gr, stack=[]; cells[0].v=true;
+    while(vis<tot){
+      const nb=[];
+      if(cy>0 && !cells[id(cx,cy-1)].v) nb.push([cx,cy-1,'t']);
+      if(cx<gc-1 && !cells[id(cx+1,cy)].v) nb.push([cx+1,cy,'r']);
+      if(cy<gr-1 && !cells[id(cx,cy+1)].v) nb.push([cx,cy+1,'b']);
+      if(cx>0 && !cells[id(cx-1,cy)].v) nb.push([cx-1,cy,'l']);
+      if(nb.length){
+        const [nx,ny,d]=nb[Math.floor(Math.random()*nb.length)];
+        if(d==='t'){ cells[id(cx,cy)].t=false; cells[id(nx,ny)].b=false; }
+        if(d==='r'){ cells[id(cx,cy)].r=false; cells[id(nx,ny)].l=false; }
+        if(d==='b'){ cells[id(cx,cy)].b=false; cells[id(nx,ny)].t=false; }
+        if(d==='l'){ cells[id(cx,cy)].l=false; cells[id(nx,ny)].r=false; }
+        stack.push([cx,cy]); cx=nx; cy=ny; cells[id(cx,cy)].v=true; vis++;
+      } else if(stack.length){ const p=stack.pop(); cx=p[0]; cy=p[1]; } else break;
+    }
+    // paredes en fracciones (x,w de W · y,h de H)
+    const X0=margin, Y0=margin;
+    const add=(x,y,w,h)=>paredes.push({x:x/W,y:y/H,w:w/W,h:h/H});
+    add(X0-t/2, Y0-t/2, gc*cw+t, t);
+    add(X0-t/2, Y0+gr*ch-t/2, gc*cw+t, t);
+    add(X0-t/2, Y0-t/2, t, gr*ch+t);
+    add(X0+gc*cw-t/2, Y0-t/2, t, gr*ch+t);
+    for(let y=0;y<gr;y++) for(let x=0;x<gc;x++){
+      const c=cells[id(x,y)];
+      if(c.r && x<gc-1) add(X0+(x+1)*cw-t/2, Y0+y*ch-t/2, t, ch+t);
+      if(c.b && y<gr-1) add(X0+x*cw-t/2, Y0+(y+1)*ch-t/2, cw+t, t);
+    }
+    // frutas en celdas al azar (no la de inicio)
+    const prod=[]; for(let m=1;m<=PRODS;m++) prod.push(N*m); shuffle(prod);
+    const celdas=[]; for(let i=1;i<gc*gr;i++) celdas.push(i); shuffle(celdas);
+    for(let i=0;i<PRODS;i++){
+      const ci=celdas[i], ccx=ci%gc, ccy=Math.floor(ci/gc);
+      const px=X0+(ccx+0.5)*cw, py=Y0+(ccy+0.5)*ch;
+      frutas.push({ valor:prod[i], fx:px/W, fy:py/H, cat:"g", tipo:i%FRUTA_COL.length, comida:false, pop:0, bob:Math.random()*6.28 });
+    }
+    turtle.x=X0+0.5*cw; turtle.y=Y0+0.5*ch;
+    worldW=W; camX=0;
+  }
+  function chocaPared(px,py,r){
+    for(const w of paredes){
+      const rx=w.x*W, ry=w.y*H, rw=w.w*W, rh=w.h*H;
+      const nx=Math.max(rx,Math.min(px,rx+rw)), ny=Math.max(ry,Math.min(py,ry+rh));
+      if((px-nx)*(px-nx)+(py-ny)*(py-ny) < r*r) return true;
+    }
+    return false;
+  }
+
+  function nubesInit(){ nubes=[]; for(let i=0;i<4;i++) nubes.push({ x:Math.random(), y:0.08+Math.random()*0.22, s:0.7+Math.random()*0.7, v:0.006+Math.random()*0.006 }); }
+
+  // ---------- Operación ----------
+  function nuevaOperacion(){
+    objetivoVal=tabla*currentM;
+    document.getElementById('operacion').textContent=tabla+" × "+currentM+" = ?";
+    setTimeout(decirOperacion,180);
+  }
+
+  // ---------- Flash ----------
+  const flashEl=document.getElementById('flash'); let flashTO=null;
+  function flash(txt,tipo){ flashEl.textContent=txt; flashEl.className="show "+tipo; if(flashTO) clearTimeout(flashTO); flashTO=setTimeout(()=>{flashEl.className="";},1000); }
+
+  // ---------- Menú de tablas ----------
+  function renderTablas(){
+    const cont=document.getElementById('gridTablas'); cont.innerHTML="";
+    for(let N=TABLAS_MIN;N<=TABLAS_MAX;N++){
+      const chip=document.createElement('button'); chip.className="tabchip";
+      const rec=leerRec(N);
+      chip.innerHTML='<span class="tl">Tabla del '+N+'</span><span class="tr">'+(rec?('🏆 '+fmt(rec)):'&nbsp;')+'</span>';
+      chip.addEventListener('click',()=>iniciar(N)); cont.appendChild(chip);
+    }
+  }
+  function irAMenu(){ estado="menu"; document.getElementById('ovFin').classList.add('hidden'); renderTablas(); document.getElementById('ovMenu').classList.remove('hidden'); }
+
+  // ---------- Iniciar ----------
+  function iniciar(N){
+    tabla=N; initAudio(); resize();
+    if(escenario==="laberinto"){
+      generarLaberinto(N);
+    } else {
+      worldW=W*WORLDMULT; nubesInit(); generarNivel(N);
+      turtle.r=Math.max(22,H*0.085); frR=H*0.062;
+      turtle.x=W*0.15; turtle.y=H*0.6; camX=0;
+    }
+    turtle.face=1;
+    comidos=0; currentM=1; penal=0; coolMal=0;
+    mouse.x=turtle.x-camX; mouse.y=turtle.y; mouse.active=false;
+    tInicio=performance.now(); tActual=0;
+    pintarRecHUD();
+    document.getElementById('ovMenu').classList.add('hidden');
+    document.getElementById('ovFin').classList.add('hidden');
+    estado="jugando"; nuevaOperacion(); actualizarHUD();
+  }
+  function actualizarHUD(){ document.getElementById('progreso').textContent=comidos+"/"+PRODS; document.getElementById('tiempo').textContent=fmt(tActual); }
+
+  function completarTabla(){
+    estado="fin";
+    const total=tActual, rec=leerRec(tabla); const nuevo=(rec===null||total<rec); if(nuevo) guardarRec(tabla,total); pintarRecHUD();
+    document.getElementById('finTitulo').textContent="🎉 ¡Tabla del "+tabla+" completa!";
+    let msg="Resolviste las 10 multiplicaciones.<br>Tu tiempo: <b>"+fmt(total)+"</b>";
+    msg += nuevo ? "<br><span style='color:#3ddc84'>🏆 ¡NUEVO RÉCORD!</span>" : "<br>Récord: <b>"+fmt(rec)+"</b>";
+    document.getElementById('finTexto').innerHTML=msg;
+    document.getElementById('btnSiguiente').style.display = (tabla<TABLAS_MAX)?"":"none";
+    document.getElementById('ovFin').classList.remove('hidden');
+    sWin(); decir("¡Muy bien! Completaste la tabla del "+numeroATexto(tabla));
+  }
+
+  // ---------- Entrada ----------
+  function posEvt(e){ const rect=canvas.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    const cy=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+    mouse.x=Math.max(0,Math.min(W,cx)); mouse.y=Math.max(0,Math.min(H,cy)); mouse.active=true; }
+  canvas.addEventListener('mousemove',posEvt);
+  canvas.addEventListener('mouseenter',posEvt);
+  canvas.addEventListener('touchstart',function(e){ posEvt(e); e.preventDefault(); },{passive:false});
+  canvas.addEventListener('touchmove',function(e){ posEvt(e); e.preventDefault(); },{passive:false});
+
+  // ---------- Update ----------
+  function update(dt){
+    for(const c of nubes){ c.x+=c.v*(dt/1000); if(c.x>1.15) c.x=-0.15; }
+    if(estado!=="jugando"){ turtle.anim+=dt*0.004; return; }
+    tActual=performance.now()-tInicio+penal;
+    if(escenario==="laberinto") moverLaberinto(dt); else moverPaisaje(dt);
+    if(coolMal>0) coolMal-=dt;
+
+    const fr=frR;
+    for(const f of frutas){
+      if(f.comida){ if(f.pop>0) f.pop-=dt; continue; }
+      f.bob+=dt*0.004;
+      const fxp=f.fx*worldW, fyp=f.fy*H;
+      if(Math.hypot(fxp-turtle.x,fyp-turtle.y) < turtle.r*0.85+fr){
+        if(f.valor===objetivoVal){
+          f.comida=true; f.pop=260; comidos++; sBien();
+          flash("¡"+tabla+" × "+currentM+" = "+objetivoVal+"! ✓","bien"); actualizarHUD();
+          if(comidos>=PRODS){ completarTabla(); return; }
+          currentM++; nuevaOperacion();
+        } else if(coolMal<=0){
+          coolMal=650; penal+=2000; sMal(); flash("Esa es "+f.valor+" · +2s","mal");
+          const a=Math.atan2(turtle.y-fyp,turtle.x-fxp), pdx=Math.cos(a)*turtle.r, pdy=Math.sin(a)*turtle.r;
+          if(escenario!=="laberinto" || !chocaPared(turtle.x+pdx,turtle.y,turtle.r*0.92)) turtle.x+=pdx;
+          if(escenario!=="laberinto" || !chocaPared(turtle.x,turtle.y+pdy,turtle.r*0.92)) turtle.y+=pdy;
+        }
+      }
+    }
+    actualizarHUD();
+  }
+
+  function moverPaisaje(dt){
+    camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
+    const tx=mouse.active?(camX+mouse.x):turtle.x, ty=mouse.active?mouse.y:turtle.y;
+    const dx=tx-turtle.x, dy=ty-turtle.y;
+    const maxV=W*0.0095, ease=0.14;
+    let mvx=dx*ease, mvy=dy*ease; const mv=Math.hypot(mvx,mvy);
+    if(mv>maxV){ mvx=mvx/mv*maxV; mvy=mvy/mv*maxV; }
+    turtle.x+=mvx*(dt/16.67); turtle.y+=mvy*(dt/16.67);
+    turtle.x=Math.max(turtle.r,Math.min(worldW-turtle.r,turtle.x));
+    turtle.y=Math.max(H*0.12,Math.min(H*groundFrac-turtle.r*0.25,turtle.y));
+    if(Math.abs(mvx)>0.4) turtle.face=mvx>0?1:-1;
+    turtle.anim += (mv>0.5?dt*0.02:dt*0.005);
+    camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
+  }
+  function moverLaberinto(dt){
+    camX=0;
+    const tx=mouse.active?mouse.x:turtle.x, ty=mouse.active?mouse.y:turtle.y;
+    const dx=tx-turtle.x, dy=ty-turtle.y;
+    const maxV=W*0.0072, ease=0.14;
+    let mvx=dx*ease, mvy=dy*ease; const mv=Math.hypot(mvx,mvy);
+    if(mv>maxV){ mvx=mvx/mv*maxV; mvy=mvy/mv*maxV; }
+    mvx*=dt/16.67; mvy*=dt/16.67;
+    const rr=turtle.r*0.92;
+    if(!chocaPared(turtle.x+mvx,turtle.y,rr)) turtle.x+=mvx;
+    if(!chocaPared(turtle.x,turtle.y+mvy,rr)) turtle.y+=mvy;
+    if(Math.abs(mvx)>0.3) turtle.face=mvx>0?1:-1;
+    turtle.anim += (mv>0.5?dt*0.02:dt*0.005);
+  }
+
+  // ---------- Dibujo ----------
+  function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+  function drawFondo(){
+    // cielo
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#7ec8ff"); g.addColorStop(1,"#cdeeff");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // sol (parallax muy leve)
+    ctx.fillStyle="rgba(255,236,140,.9)"; ctx.beginPath(); ctx.arc(W*0.84-camX*0.04,H*0.16,H*0.08,0,6.28); ctx.fill();
+    // colinas repetidas con parallax
+    const par=0.45, sp=W*0.55, base=-((camX*par)%sp);
+    ctx.fillStyle="#7bd06a";
+    for(let hx=base-sp; hx<W+sp; hx+=sp){ ctx.beginPath(); ctx.ellipse(hx+sp*0.5,H*0.86,W*0.30,H*0.22,0,Math.PI,0); ctx.fill(); }
+    ctx.fillStyle="#8fdd7a";
+    for(let hx=base-sp; hx<W+sp; hx+=sp){ ctx.beginPath(); ctx.ellipse(hx,H*0.88,W*0.34,H*0.26,0,Math.PI,0); ctx.fill(); }
+    // nubes
+    ctx.fillStyle="rgba(255,255,255,.92)";
+    for(const c of nubes){ const cx=c.x*W, cy=c.y*H, s=H*0.05*c.s;
+      ctx.beginPath(); ctx.arc(cx,cy,s,0,6.28); ctx.arc(cx+s,cy+s*0.2,s*0.85,0,6.28); ctx.arc(cx-s,cy+s*0.2,s*0.8,0,6.28); ctx.arc(cx+s*0.4,cy-s*0.5,s*0.7,0,6.28); ctx.fill(); }
+    // suelo
+    const gy=H*groundFrac;
+    ctx.fillStyle="#6b4a2b"; ctx.fillRect(0,gy,W,H-gy);
+    ctx.fillStyle="#4caf50"; ctx.fillRect(0,gy,W,H*0.045);
+    // pasto que se desplaza con el mundo (sensación de avance)
+    ctx.fillStyle="#3d9142"; const tw=H*0.05, off=camX%tw;
+    for(let x=-off-tw;x<W+tw;x+=tw){ ctx.beginPath(); ctx.moveTo(x,gy); ctx.lineTo(x+tw*0.5,gy-H*0.02); ctx.lineTo(x+tw,gy); ctx.fill(); }
+    // marcas de tierra desplazándose
+    ctx.fillStyle="rgba(0,0,0,.10)"; const dw=H*0.16, doff=camX%dw;
+    for(let x=-doff-dw;x<W+dw;x+=dw){ ctx.beginPath(); ctx.arc(x, gy+(H-gy)*0.55, H*0.018, 0, 6.28); ctx.fill(); }
+  }
+
+  function drawBloque(cx,cy,half){
+    const w=half*2, h=half*1.15;
+    ctx.save();
+    ctx.fillStyle="#e0a020"; ctx.strokeStyle="#8a5a00"; ctx.lineWidth=Math.max(2,half*0.12);
+    roundRect(ctx,cx-half,cy-h/2,w,h,half*0.18); ctx.fill(); ctx.stroke();
+    ctx.fillStyle="#fff4c2"; ctx.font="bold "+(half*0.9)+"px 'Trebuchet MS',sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText("?",cx,cy+half*0.05);
+    ctx.fillStyle="#8a5a00"; const rv=half*0.12;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(p=>{ ctx.beginPath(); ctx.arc(cx+p[0]*(half-rv*1.4),cy+p[1]*(h/2-rv*1.4),rv,0,6.28); ctx.fill(); });
+    ctx.restore();
+  }
+
+  function drawFruta(f){
+    const r=frR, x=f.fx*worldW-camX, y=f.fy*H;
+    if(x<-W*0.25 || x>W*1.25) return;                 // fuera de vista
+    if(f.cat!=="g") drawBloque(x,y+r+H*0.03,r*1.05);   // el bloque "?" permanece siempre
+    if(f.comida && f.pop<=0) return;                    // fruta comida: solo desaparece la fruta
+    ctx.save(); ctx.translate(x,y+Math.sin(f.bob)*r*0.08);
+    if(f.comida){ ctx.globalAlpha=Math.max(0,f.pop/260); ctx.scale(1+(1-f.pop/260)*0.6,1+(1-f.pop/260)*0.6); }
+    const col=FRUTA_COL[f.tipo];
+    ctx.strokeStyle="#5a3b1a"; ctx.lineWidth=Math.max(2,r*0.1); ctx.beginPath(); ctx.moveTo(0,-r*0.85); ctx.lineTo(r*0.05,-r*1.2); ctx.stroke();
+    ctx.fillStyle="#3ddc84"; ctx.beginPath(); ctx.ellipse(r*0.28,-r*1.05,r*0.3,r*0.15,-0.7,0,6.28); ctx.fill();
+    ctx.fillStyle=col; ctx.shadowColor="rgba(0,0,0,.3)"; ctx.shadowBlur=7; ctx.beginPath(); ctx.arc(0,0,r,0,6.28); ctx.fill(); ctx.shadowBlur=0;
+    ctx.fillStyle="rgba(255,255,255,.4)"; ctx.beginPath(); ctx.ellipse(-r*0.32,-r*0.34,r*0.22,r*0.13,-0.6,0,6.28); ctx.fill();
+    const txt=String(f.valor);
+    ctx.font="bold "+(txt.length>=3?r*0.68:txt.length>=2?r*0.88:r*1.1)+"px 'Trebuchet MS',sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.lineWidth=Math.max(3,r*0.16); ctx.strokeStyle="rgba(0,0,0,.6)"; ctx.strokeText(txt,0,r*0.05);
+    ctx.fillStyle="#fff"; ctx.fillText(txt,0,r*0.05);
+    ctx.restore();
+  }
+
+  function drawTortuga(){
+    const r=turtle.r; ctx.save(); ctx.translate(turtle.x-camX,turtle.y);
+    if(turtle.face<0) ctx.scale(-1,1);
+    const bob=Math.sin(turtle.anim)*r*0.05; ctx.translate(0,bob);
+    const lp=Math.sin(turtle.anim*2)*r*0.16;
+    ctx.fillStyle="#2e9e4f";
+    ctx.beginPath(); ctx.ellipse(-r*0.42,r*0.5+lp,r*0.2,r*0.24,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.4,r*0.5-lp,r*0.2,r*0.24,0,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-r*0.8,r*0.15); ctx.lineTo(-r*1.05,-r*0.02); ctx.lineTo(-r*0.78,-r*0.12); ctx.closePath(); ctx.fill();
+    // cabeza
+    ctx.fillStyle="#39b55e"; ctx.beginPath(); ctx.ellipse(r*0.9,-r*0.02,r*0.34,r*0.3,0,0,6.28); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(r*1.02,-r*0.12,r*0.1,0,6.28); ctx.fill();
+    ctx.fillStyle="#12233a"; ctx.beginPath(); ctx.arc(r*1.06,-r*0.12,r*0.05,0,6.28); ctx.fill();
+    ctx.strokeStyle="#0d7a3a"; ctx.lineWidth=Math.max(2,r*0.05); ctx.beginPath(); ctx.arc(r*1.0,r*0.12,r*0.09,0.2,1.1); ctx.stroke();
+    // caparazón
+    ctx.fillStyle="#e08a2e"; ctx.beginPath(); ctx.ellipse(0,-r*0.02,r*0.9,r*0.78,0,Math.PI,0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#c76a1e"; ctx.beginPath(); ctx.ellipse(0,-r*0.02,r*0.9,r*0.78,0,Math.PI,0); ctx.closePath(); ctx.clip();
+    ctx.strokeStyle="#8a4712"; ctx.lineWidth=Math.max(2,r*0.06);
+    ctx.beginPath(); ctx.arc(0,-r*0.02,r*0.45,Math.PI,0); ctx.stroke();
+    for(const a of [-0.6,0.6]){ ctx.beginPath(); ctx.moveTo(Math.cos(Math.PI/2+a)*r*0.45,-r*0.02-Math.sin(Math.PI/2+a)*r*0.45); ctx.lineTo(Math.cos(Math.PI/2+a)*r*0.9,-r*0.02-Math.sin(Math.PI/2+a)*r*0.78); ctx.stroke(); }
+    ctx.restore();
+    // borde inferior del caparazón
+    ctx.save(); ctx.translate(turtle.x-camX,turtle.y+bob);
+    ctx.strokeStyle="#8a4712"; ctx.lineWidth=Math.max(2,r*0.09); ctx.beginPath(); ctx.moveTo(-r*0.9,-r*0.02); ctx.lineTo(r*0.9,-r*0.02); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCursor(){ if(!mouse.active||estado!=="jugando") return; ctx.save(); ctx.strokeStyle="rgba(255,255,255,.4)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(mouse.x,mouse.y,7,0,6.28); ctx.moveTo(mouse.x-11,mouse.y); ctx.lineTo(mouse.x-4,mouse.y); ctx.moveTo(mouse.x+4,mouse.y); ctx.lineTo(mouse.x+11,mouse.y); ctx.stroke(); ctx.restore(); }
+
+  function drawLaberinto(){
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#a7e4ff"); g.addColorStop(1,"#d7f3d0");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    if(!mazeMeta) return;
+    const m=mazeMeta;
+    // piso de arena
+    ctx.fillStyle="#ecdca8";
+    roundRect(ctx, m.margin-m.cw*0.12, m.margin-m.ch*0.12, m.gc*m.cw+m.cw*0.24, m.gr*m.ch+m.ch*0.24, Math.min(W,H)*0.02); ctx.fill();
+    // setos (paredes)
+    for(const w of paredes){
+      const x=w.x*W, y=w.y*H, ww=Math.max(w.w*W,4), hh=Math.max(w.h*H,4), rad=Math.min(ww,hh)*0.42;
+      ctx.fillStyle="#2f9a4f"; roundRect(ctx,x,y,ww,hh,rad); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.14)"; roundRect(ctx,x+ww*0.08,y+hh*0.06,ww*0.84,hh*0.34,rad*0.6); ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.10)"; roundRect(ctx,x,y+hh*0.62,ww,hh*0.38,rad*0.6); ctx.fill();
+    }
+  }
+  function draw(){
+    if(escenario==="laberinto") drawLaberinto(); else drawFondo();
+    for(const f of frutas) drawFruta(f);
+    drawCursor();
+    if(estado==="jugando"||estado==="fin") drawTortuga();
+  }
+  function loop(ts){ const dt=Math.min(50,ts-last||16.67); last=ts; update(dt); draw(); requestAnimationFrame(loop); }
+
+  // ---------- Botones ----------
+  document.getElementById('btnAudio').addEventListener('click',()=>{ initAudio(); if(estado==="jugando") decirOperacion(); sWaka(); });
+  document.getElementById('panelVoz').addEventListener('click',()=>{ initAudio(); toggleVoz(); });
+  document.getElementById('btnVozMenu').addEventListener('click',()=>{ initAudio(); toggleVoz(); });
+  document.getElementById('btnSiguiente').addEventListener('click',()=>{ iniciar(Math.min(TABLAS_MAX,tabla+1)); });
+  document.getElementById('btnRepetir').addEventListener('click',()=>{ iniciar(tabla); });
+  document.getElementById('btnMenu').addEventListener('click',irAMenu);
+  document.querySelectorAll('.escbtn').forEach(b=>b.addEventListener('click',()=>{
+    escenario=b.dataset.esc;
+    document.querySelectorAll('.escbtn').forEach(x=>x.classList.toggle('sel',x===b));
+    renderTablas();
+  }));
+
+  // ---------- Arranque ----------
+  resize(); nubesInit(); renderTablas(); pintarVoz();
+  turtle.x=W*0.5; turtle.y=H*0.6;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
