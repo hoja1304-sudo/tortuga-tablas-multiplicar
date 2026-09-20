@@ -65,6 +65,56 @@
   .credito{margin-top:10px;font-size:12px;line-height:1.55;color:rgba(255,255,255,.72);font-style:italic;letter-spacing:.3px;}
   .credito b{color:var(--amarillo);font-weight:bold;font-style:normal;}
   footer{font-size:11px;opacity:.5;padding:2px 0 6px;text-align:center;}
+  .probbtn{background:rgba(255,212,0,.18);border:2px solid var(--amarillo);color:var(--amarillo);border-radius:20px;padding:7px 16px;font-size:15px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s;}
+  .probbtn:hover{transform:translateY(-2px);background:rgba(255,212,0,.3);}
+  /* ===== Sección Problemas ===== */
+  #problemas{position:fixed;inset:0;z-index:60;background:radial-gradient(circle at 50% -10%,#1b3a8a 0%,#0a1636 55%,#050b22 100%);display:none;flex-direction:column;align-items:center;padding:10px;overflow:auto;font-family:Arial,Helvetica,sans-serif;}
+  #problemas.show{display:flex;}
+  #problemas h2{margin:2px 0;font-size:clamp(18px,4.5vw,28px);color:var(--amarillo);text-shadow:0 3px 0 #b58a00;text-align:center;}
+  #problemas .psub{font-size:13px;opacity:.85;margin-bottom:4px;text-align:center;max-width:640px;}
+  #problemas .ptabs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
+  #problemas .ptab{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);color:#fff;border-radius:14px 14px 0 0;padding:9px 16px;font-size:15px;font-weight:bold;cursor:pointer;}
+  #problemas .ptab.sel{background:rgba(255,212,0,.16);border-color:var(--amarillo);color:var(--amarillo);}
+  #problemas .ptab.lock{opacity:.5;cursor:not-allowed;}
+  #problemas .pcard{width:min(96vw,760px);background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.18);border-radius:0 16px 16px 16px;padding:16px;position:relative;min-height:300px;}
+  #problemas .pmeta{display:flex;justify-content:space-between;font-size:14px;opacity:.9;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+  #problemas .pmeta b{color:var(--amarillo);}
+  #pfigura{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin:6px 0 12px;}
+  #penunciado{font-size:clamp(16px,3.4vw,21px);line-height:1.5;background:rgba(255,255,255,.06);border-left:5px solid var(--amarillo);padding:13px 15px;border-radius:10px;margin:0 0 14px;}
+  #popciones{display:grid;gap:10px;grid-template-columns:1fr;}
+  @media(min-width:520px){ #popciones{grid-template-columns:repeat(3,1fr);} }
+  #problemas .opt{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.28);color:#fff;border-radius:14px;padding:13px 10px;font-size:19px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s;}
+  #problemas .opt:hover:not(:disabled){transform:translateY(-2px);background:rgba(255,255,255,.18);}
+  #problemas .opt:disabled{cursor:default;}
+  #problemas .opt .letra{display:inline-block;background:var(--amarillo);color:#5a3d00;border-radius:50%;width:26px;height:26px;line-height:26px;font-size:15px;margin-right:8px;}
+  #problemas .opt.ok{background:rgba(61,220,132,.25);border-color:var(--verde);}
+  #problemas .opt.no{background:rgba(255,75,87,.22);border-color:var(--rojo);}
+  #pfeedback{min-height:52px;margin-top:12px;text-align:center;font-size:clamp(17px,3.8vw,22px);font-weight:bold;}
+  #pfeedback .emoji{font-size:38px;display:block;line-height:1.1;}
+  #pfeedback.bien{color:var(--verde);} #pfeedback.mal{color:var(--rojo);}
+  #problemas .pacc{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+  #pfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:0 16px 16px 16px;}
+  #psecSol h3{color:var(--amarillo);margin:0 0 10px;}
+  #ppasos{font-size:clamp(15px,3.3vw,18px);line-height:1.7;padding-left:22px;}
+  #ppasos li{margin-bottom:5px;}
+  #prespFinal{margin-top:12px;font-size:18px;font-weight:bold;background:rgba(61,220,132,.18);border:1px solid var(--verde);border-radius:10px;padding:11px 13px;color:#eafff2;}
+  #psolLock{text-align:center;opacity:.8;font-size:16px;padding:36px 10px;}
+  #problemas .grid-fig{display:inline-block;margin:0 5px;text-align:center;}
+  #problemas .grid-fig svg{background:#fff;border-radius:6px;}
+  #problemas .grid-fig span{display:block;font-size:12px;opacity:.85;margin-top:3px;}
+  #problemas .pcred{margin-top:12px;font-size:12px;color:rgba(255,255,255,.72);font-style:italic;text-align:center;}
+  #problemas .pcred b{color:var(--amarillo);font-style:normal;}
+  @media print{
+    body>header, body>#hud, body>#wrap, body>footer{display:none!important;}
+    #problemas{position:static;display:block!important;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:12pt;}
+    #penunciado{font-size:12pt!important;} #problemas .opt{font-size:12pt!important;} #ppasos{font-size:12pt!important;} #prespFinal{font-size:12pt!important;}
+    #problemas h2{color:#000;text-shadow:none;} #problemas .psub,#problemas .ptabs,#problemas .pacc,#pfeedback,#pfx,#problemas .pcred,#problemas .pmeta{display:none!important;}
+    #problemas .pcard{border:1px solid #999;background:#fff;}
+    #penunciado{background:#fff;color:#000;border-left:4px solid #000;}
+    #problemas .opt{background:#fff;color:#000;border:1px solid #000;} #problemas .opt .letra{background:#000;color:#fff;}
+    #psecProb,#psecSol{display:block!important;} #psolLock{display:none!important;} #psolContent{display:block!important;}
+    #psecSol{margin-top:16px;border-top:2px dashed #999;padding-top:10px;} #psecSol h3{color:#000;} #prespFinal{background:#eee;color:#000;border:1px solid #000;}
+  }
 </style>
 </head>
 <body>
@@ -93,6 +143,7 @@
       <span class="escLbl">Escenario:</span>
       <button class="escbtn sel" data-esc="paisaje">🏞️ Paisaje</button>
       <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
+      <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
     </div>
     <div id="gridTablas"></div>
     <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
@@ -114,6 +165,41 @@
 
 <footer>Recurso educativo · Primaria · Tablas de multiplicar con la tortuga</footer>
 
+<!-- ===== Sección Problemas ===== -->
+<div id="problemas">
+  <h2>📝 Problemas · Tablas de multiplicar</h2>
+  <div class="psub">Lee el problema y elige la respuesta correcta. La dificultad aumenta con tus aciertos (tablas del 1 al 10).</div>
+  <div class="ptabs">
+    <button class="ptab sel" data-ptab="prob">📝 Problema</button>
+    <button class="ptab lock" data-ptab="sol" id="pTabSol">✅ Solución paso a paso</button>
+  </div>
+  <div class="pcard">
+    <section id="psecProb">
+      <div class="pmeta"><span>Nivel <b id="pnivel">1</b></span><span>Aciertos: <b id="paciertos">0</b> / <b id="pintentos">0</b></span></div>
+      <div id="pfigura"></div>
+      <p id="penunciado">—</p>
+      <div id="popciones"></div>
+      <div id="pfeedback"></div>
+      <div class="pacc">
+        <button id="pbtnNuevo" class="btn verde">🔄 Nuevo problema</button>
+        <button id="pbtnImprimir" class="btn gris">🖨️ Imprimir</button>
+        <button id="pbtnDescargar" class="btn gris">⬇️ Descargar</button>
+        <button id="pbtnMenu" class="btn gris">🏠 Menú</button>
+      </div>
+      <canvas id="pfx"></canvas>
+    </section>
+    <section id="psecSol" class="hidden">
+      <div id="psolLock">🙂 Responde primero el problema para ver la solución paso a paso.</div>
+      <div id="psolContent" class="hidden">
+        <h3>Solución paso a paso</h3>
+        <ol id="ppasos"></ol>
+        <p id="prespFinal"></p>
+      </div>
+    </section>
+  </div>
+  <div class="pcred">Elaborado por <b>Alberto Jiménez Ruiz</b> · Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -129,7 +215,7 @@
   let frutas=[];
   const FRUTA_COL=["#ff4b57","#ff9d3d","#c084fc","#ffd400","#7bd64f","#ff7bac"];
 
-  const turtle={x:100,y:250,r:34,face:1,anim:0};
+  const turtle={x:100,y:250,r:34,face:1,anim:0,ang:0};
   let mouse={x:100,y:250,active:false};
   let aimX=0, aimY=0;        // punto guía (correa) que se dibuja junto a la tortuga
   let nubes=[], last=0;
@@ -433,6 +519,9 @@
     if(!chocaPared(turtle.x+mvx,turtle.y,rr)) turtle.x+=mvx;
     if(!chocaPared(turtle.x,turtle.y+mvy,rr)) turtle.y+=mvy;
     if(Math.abs(mvx)>0.3) turtle.face=mvx>0?1:-1;
+    // orientar la tortuga (vista superior) hacia donde avanza
+    if(Math.hypot(dx,dy)>1){ const ta=Math.atan2(dy,dx); let da=ta-turtle.ang;
+      while(da>Math.PI)da-=6.283185; while(da<-Math.PI)da+=6.283185; turtle.ang+=da*0.28; }
     turtle.anim += (mv>0.5?dt*0.02:dt*0.005);
   }
 
@@ -525,6 +614,36 @@
     ctx.restore();
   }
 
+  // Tortuga vista DESDE ARRIBA (para el laberinto): caparazón desde arriba, cabeza al frente, 4 patas.
+  function drawTortugaTop(){
+    const r=turtle.r; ctx.save(); ctx.translate(turtle.x-camX,turtle.y); ctx.rotate(turtle.ang);
+    const paso=Math.sin(turtle.anim*2)*r*0.12;
+    // patas (4)
+    ctx.fillStyle="#2e9e4f";
+    const patas=[[0.55,0.6],[0.55,-0.6],[-0.55,0.62],[-0.55,-0.62]];
+    patas.forEach((p,i)=>{ const off=(i%2===0?paso:-paso);
+      ctx.save(); ctx.translate(p[0]*r, p[1]*r+off); ctx.rotate(p[1]>0?0.5:-0.5);
+      ctx.beginPath(); ctx.ellipse(0,0,r*0.2,r*0.13,0,0,6.28); ctx.fill(); ctx.restore(); });
+    // cola (atrás, -x)
+    ctx.beginPath(); ctx.moveTo(-r*0.85,0); ctx.lineTo(-r*1.12,-r*0.1); ctx.lineTo(-r*1.12,r*0.1); ctx.closePath(); ctx.fill();
+    // cabeza (al frente, +x)
+    ctx.fillStyle="#39b55e"; ctx.beginPath(); ctx.ellipse(r*0.98,0,r*0.34,r*0.28,0,0,6.28); ctx.fill();
+    ctx.fillStyle="#12233a";
+    ctx.beginPath(); ctx.arc(r*1.12,-r*0.13,r*0.06,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*1.12, r*0.13,r*0.06,0,6.28); ctx.fill();
+    // caparazón visto desde arriba
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.9,r*0.82,0,0,6.28); ctx.fillStyle="#c76a1e"; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.9,r*0.82,0,0,6.28); ctx.strokeStyle="#8a4712"; ctx.lineWidth=Math.max(2,r*0.09); ctx.stroke();
+    // placa central (hexágono) + segmentos
+    ctx.fillStyle="#e08a2e";
+    ctx.beginPath(); for(let i=0;i<6;i++){ const a=i/6*6.283185+0.52; const px=Math.cos(a)*r*0.34, py=Math.sin(a)*r*0.30; i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="#8a4712"; ctx.lineWidth=Math.max(1.5,r*0.05);
+    ctx.beginPath(); for(let i=0;i<6;i++){ const a=i/6*6.283185+0.52; const px=Math.cos(a)*r*0.34, py=Math.sin(a)*r*0.30; i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.stroke();
+    for(let i=0;i<6;i++){ const a=i/6*6.283185+0.52; ctx.beginPath();
+      ctx.moveTo(Math.cos(a)*r*0.34,Math.sin(a)*r*0.30); ctx.lineTo(Math.cos(a)*r*0.9,Math.sin(a)*r*0.82); ctx.stroke(); }
+    ctx.restore();
+  }
+
   function drawCursor(){ if(!mouse.active||estado!=="jugando") return; const ax=aimX-camX, ay=aimY;
     ctx.save(); ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.fillStyle="rgba(255,255,255,.25)"; ctx.lineWidth=2;
     ctx.beginPath(); ctx.arc(ax,ay,6,0,6.28); ctx.fill(); ctx.stroke(); ctx.restore(); }
@@ -549,7 +668,7 @@
     if(escenario==="laberinto") drawLaberinto(); else drawFondo();
     for(const f of frutas) drawFruta(f);
     drawCursor();
-    if(estado==="jugando"||estado==="fin") drawTortuga();
+    if(estado==="jugando"||estado==="fin"){ if(escenario==="laberinto") drawTortugaTop(); else drawTortuga(); }
   }
   function loop(ts){ const dt=Math.min(50,ts-last||16.67); last=ts; update(dt); draw(); requestAnimationFrame(loop); }
 
@@ -570,6 +689,164 @@
   resize(); nubesInit(); renderTablas(); pintarVoz();
   turtle.x=W*0.5; turtle.y=H*0.6;
   requestAnimationFrame(loop);
+})();
+</script>
+
+<script>
+/* ===== Lógica de la sección Problemas ===== */
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+  let aciertos=0, intentos=0, nivel=1, actual=null, respondido=false, iniciado=false;
+
+  const CELCOL=["#ffd400","#ff9d3d","#3ddc84","#25e0d6","#7b9dff","#ff7bac","#c084fc","#ff6b6b","#6dd47e"];
+  function svgCuadrado(n,px){
+    const cel=px/n; let s=`<svg width="${px}" height="${px}" viewBox="0 0 ${px} ${px}">`;
+    let k=0;
+    for(let fy=0;fy<n;fy++) for(let fx=0;fx<n;fx++){ const c=CELCOL[(k++)%CELCOL.length];
+      s+=`<rect x="${fx*cel}" y="${fy*cel}" width="${cel}" height="${cel}" fill="${c}" stroke="#7a5200" stroke-width="1.5"/>`; }
+    s+=`<rect x="1" y="1" width="${px-2}" height="${px-2}" fill="none" stroke="#5a3b00" stroke-width="2.5"/>`;
+    return s+`</svg>`;
+  }
+  function figuraPatron(){
+    const px=64;
+    return `<div class="grid-fig">${svgCuadrado(1,px)}<span>Figura 1</span></div>`+
+           `<div class="grid-fig">${svgCuadrado(2,px)}<span>Figura 2</span></div>`+
+           `<div class="grid-fig">${svgCuadrado(3,px)}<span>Figura 3</span></div>`+
+           `<div class="grid-fig" style="display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:30px;color:#ffd400;height:64px;">…&nbsp;❓<span style="color:#fff;opacity:.85">Figura n</span></div>`;
+  }
+
+  const PLANTILLAS=[
+    {rank:1, make:()=>{ const km=r(2,10),t=km*6;
+      return {texto:`Daniel sale todas las mañanas, antes de ir a su trabajo, a correr <b>${km} km</b>. ¿Cuántos kilómetros recorrió de <b>lunes a sábado</b>?`,correcta:t,unidad:"km",
+        pasos:[`De lunes a sábado hay <b>6 días</b>.`,`Cada día corre <b>${km} km</b>.`,`Multiplicamos: <b>${km} × 6 = ${t}</b>.`,`Respuesta: recorrió <b>${t} km</b>.`]};}},
+    {rank:1, make:()=>{ const n=r(3,10),c=[5,10,20,25][r(0,3)],t=n*c;
+      return {texto:`Karla compró en una soda <b>${n} confites</b> a <b>${c} colones</b> cada uno. ¿Cuánto pagó Karla?`,correcta:t,unidad:"colones",
+        pasos:[`Compró <b>${n}</b> confites.`,`Cada confite cuesta <b>${c}</b> colones.`,`Multiplicamos: <b>${n} × ${c} = ${t}</b>.`,`Respuesta: pagó <b>${t} colones</b>.`]};}},
+    {rank:1, make:()=>{ const h=r(2,6),k=r(3,9),t=h*k;
+      return {texto:`Jorge dura <b>${h} horas</b> pintando un mini cuadro. Si le encargaron <b>${k} cuadros</b>, ¿cuántas horas debe invertir para pintarlos?`,correcta:t,unidad:"horas",
+        pasos:[`Cada cuadro toma <b>${h}</b> horas.`,`Son <b>${k}</b> cuadros.`,`Multiplicamos: <b>${h} × ${k} = ${t}</b>.`,`Respuesta: <b>${t} horas</b>.`]};}},
+    {rank:1, make:()=>{ const l=r(1,4),t=l*7;
+      return {texto:`Nuria se toma <b>${l} litros</b> de agua por día. ¿Cuántos litros de agua habrá tomado en <b>una semana</b>?`,correcta:t,unidad:"litros",
+        pasos:[`Una semana tiene <b>7 días</b>.`,`Cada día toma <b>${l}</b> litros.`,`Multiplicamos: <b>${l} × 7 = ${t}</b>.`,`Respuesta: <b>${t} litros</b>.`]};}},
+    {rank:1, make:()=>{ const e=r(4,10),t=2*e;
+      return {texto:`La edad de Marta es el <b>doble</b> de la edad de su hermano York, que tiene <b>${e} años</b>. ¿Cuál es la edad de Marta?`,correcta:t,unidad:"años",
+        pasos:[`El <b>doble</b> significa multiplicar por 2.`,`<b>${e} × 2 = ${t}</b>.`,`Respuesta: Marta tiene <b>${t} años</b>.`]};}},
+    {rank:1, make:()=>{ const c=r(4,9),k=r(3,10),t=c*k;
+      return {texto:`En cada caja hay <b>${c} galletas</b>. ¿Cuántas galletas hay en <b>${k} cajas</b> iguales?`,correcta:t,unidad:"galletas",
+        pasos:[`Cada caja: <b>${c}</b> galletas.`,`Hay <b>${k}</b> cajas.`,`Multiplicamos: <b>${c} × ${k} = ${t}</b>.`,`Respuesta: <b>${t} galletas</b>.`]};}},
+    {rank:1, make:()=>{ const p=r(2,10),t=4*p;
+      return {texto:`Cada perro tiene <b>4 patas</b>. ¿Cuántas patas tienen <b>${p} perros</b>?`,correcta:t,unidad:"patas",
+        pasos:[`Cada perro tiene <b>4</b> patas.`,`Son <b>${p}</b> perros.`,`Multiplicamos: <b>4 × ${p} = ${t}</b>.`,`Respuesta: <b>${t} patas</b>.`]};}},
+    {rank:2, make:()=>{ const dep=r(5,10),sac=r(2,4),q=dep-sac,t=q*10;
+      return {texto:`Juan tiene una alcancía donde deposita monedas de <b>10 colones</b>. Colocó <b>${dep} monedas</b> el martes, pero el jueves <b>sacó ${sac} monedas</b>. ¿Cuánto dinero, en colones, le queda en la alcancía?`,correcta:t,unidad:"colones",
+        pasos:[`Monedas que quedan: <b>${dep} − ${sac} = ${q}</b>.`,`Cada moneda vale <b>10</b> colones.`,`Multiplicamos: <b>${q} × 10 = ${t}</b>.`,`Respuesta: le quedan <b>${t} colones</b>.`]};}},
+    {rank:2, make:()=>{ const n=r(3,7),c=[10,20,25][r(0,2)],gasto=n*c,bill=(Math.ceil(gasto/50)+1)*50,vuelto=bill-gasto;
+      return {texto:`Ana compró <b>${n} lápices</b> a <b>${c} colones</b> cada uno y pagó con un billete de <b>${bill} colones</b>. ¿Cuánto dinero le devolvieron?`,correcta:vuelto,unidad:"colones",
+        pasos:[`Costo total: <b>${n} × ${c} = ${gasto}</b> colones.`,`Pagó con <b>${bill}</b> colones.`,`Vuelto: <b>${bill} − ${gasto} = ${vuelto}</b>.`,`Respuesta: le devolvieron <b>${vuelto} colones</b>.`]};}},
+    {rank:2, make:()=>{ const f=r(3,8),s=r(4,9),t=f*s;
+      return {texto:`En un teatro hay <b>${f} filas</b> y en cada fila caben <b>${s} sillas</b>. ¿Cuántas sillas hay en total?`,correcta:t,unidad:"sillas",
+        pasos:[`Hay <b>${f}</b> filas.`,`Cada fila tiene <b>${s}</b> sillas.`,`Multiplicamos: <b>${f} × ${s} = ${t}</b>.`,`Respuesta: <b>${t} sillas</b>.`]};}},
+    {rank:3, make:()=>{ const c=r(3,7),jorge=9*c,t=jorge-18;
+      return {texto:`La edad de Jorge es <b>nueve veces</b> la edad de Cristian, y la edad de Priscila es <b>18 años menor</b> que la de Jorge. Si Cristian tiene <b>${c} años</b>, ¿cuál es la edad de Priscila?`,correcta:t,unidad:"años",
+        pasos:[`Edad de Jorge: <b>9 × ${c} = ${jorge}</b>.`,`Priscila es 18 años menor: <b>${jorge} − 18 = ${t}</b>.`,`Respuesta: Priscila tiene <b>${t} años</b>.`]};}},
+    {rank:3, make:()=>{ const n=r(4,8),t=n*n;
+      return {texto:`Observa el patrón: la figura 1 tiene 1 cuadradito, la figura 2 tiene 4 y la figura 3 tiene 9. Si el patrón continúa, ¿cuántos cuadraditos tendrá la <b>figura ${n}</b>?`,correcta:t,unidad:"cuadraditos",figura:figuraPatron(),
+        pasos:[`Figura 1: <b>1 × 1 = 1</b>`,`Figura 2: <b>2 × 2 = 4</b>`,`Figura 3: <b>3 × 3 = 9</b>`,`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: <b>${t} cuadraditos</b>.`]};}},
+    {rank:3, make:()=>{ const cajas=r(3,6),porCaja=r(4,8),t=cajas*porCaja*2;
+      return {texto:`Una tienda recibe <b>${cajas} cajas</b> y cada caja trae <b>${porCaja} pares</b> de medias. ¿Cuántas medias (unidades) recibió en total? <i>(cada par son 2 medias)</i>`,correcta:t,unidad:"medias",
+        pasos:[`Pares en total: <b>${cajas} × ${porCaja} = ${cajas*porCaja}</b>.`,`Cada par son <b>2</b> medias.`,`Multiplicamos: <b>${cajas*porCaja} × 2 = ${t}</b>.`,`Respuesta: <b>${t} medias</b>.`]};}}
+  ];
+
+  function generarOpciones(correcta){
+    const set=new Set([correcta]); const base=Math.max(1,Math.round(correcta*0.12)); let g=0;
+    while(set.size<3 && g++<50){ const d=r(1,3)*(Math.random()<0.5?-1:1)*base; const v=correcta+d; if(v>0 && v!==correcta && !set.has(v)) set.add(v); }
+    while(set.size<3){ set.add(correcta+set.size); }
+    return shuffle([...set]);
+  }
+
+  function nuevoProblema(){
+    nivel=Math.min(3,1+Math.floor(aciertos/2)); $('pnivel').textContent=nivel;
+    // 25% del tiempo cualquier tipo (para que aparezcan cuadrados y edades); resto según nivel
+    const pool=(Math.random()<0.25)?PLANTILLAS:PLANTILLAS.filter(p=>p.rank<=nivel);
+    const p=pool[r(0,pool.length-1)]; const prob=p.make();
+    prob.opciones=generarOpciones(prob.correcta); actual=prob; respondido=false;
+    $('pfigura').innerHTML=prob.figura||"";
+    $('penunciado').innerHTML=prob.texto;
+    const cont=$('popciones'); cont.innerHTML=""; const letras=["a","b","c"];
+    prob.opciones.forEach((op,i)=>{ const b=document.createElement('button'); b.className="opt";
+      b.innerHTML='<span class="letra">'+letras[i]+'</span>'+op+(prob.unidad?(' '+prob.unidad):'');
+      b.addEventListener('click',()=>responder(op,b)); cont.appendChild(b); });
+    $('pfeedback').textContent=""; $('pfeedback').className="";
+    $('pTabSol').classList.add('lock'); $('psolContent').classList.add('hidden'); $('psolLock').classList.remove('hidden');
+    verTab('prob'); renderSolucion(prob);
+  }
+  function renderSolucion(prob){
+    const ol=$('ppasos'); ol.innerHTML=""; prob.pasos.forEach(s=>{ const li=document.createElement('li'); li.innerHTML=s; ol.appendChild(li); });
+    $('prespFinal').innerHTML="✅ Respuesta correcta: <b>"+prob.correcta+(prob.unidad?(" "+prob.unidad):"")+"</b>";
+  }
+  function responder(op,btn){
+    if(respondido) return; respondido=true; intentos++;
+    document.querySelectorAll('#problemas .opt').forEach(b=>b.disabled=true);
+    const fb=$('pfeedback');
+    if(op===actual.correcta){ aciertos++; btn.classList.add('ok'); fb.className="bien";
+      fb.innerHTML='<span class="emoji">🎉🥳</span>¡Muy bien! ¡Respuesta correcta!'; fuegos();
+    } else { btn.classList.add('no');
+      const idx=actual.opciones.indexOf(actual.correcta); const btns=document.querySelectorAll('#problemas .opt'); if(btns[idx]) btns[idx].classList.add('ok');
+      fb.className="mal"; fb.innerHTML='<span class="emoji">❌</span>Revisa la <b>solución paso a paso</b> en la otra pestaña.'; }
+    $('paciertos').textContent=aciertos; $('pintentos').textContent=intentos;
+    $('pTabSol').classList.remove('lock'); $('psolLock').classList.add('hidden'); $('psolContent').classList.remove('hidden');
+  }
+  function verTab(t){
+    document.querySelectorAll('#problemas .ptab').forEach(x=>x.classList.toggle('sel',x.dataset.ptab===t));
+    $('psecProb').classList.toggle('hidden',t!=='prob'); $('psecSol').classList.toggle('hidden',t!=='sol');
+  }
+  document.querySelectorAll('#problemas .ptab').forEach(tb=>tb.addEventListener('click',()=>{
+    if(tb.dataset.ptab==='sol' && tb.classList.contains('lock')) return; verTab(tb.dataset.ptab); }));
+
+  // Fuegos artificiales
+  const fx=$('pfx'), fctx=fx.getContext('2d'); let parts=[], fxOn=false, fxLast=0;
+  function resizeFx(){ const rc=fx.getBoundingClientRect(); fx.width=rc.width; fx.height=rc.height; }
+  window.addEventListener('resize',resizeFx);
+  function fuegos(){ resizeFx(); parts=[]; const cols=["#ffd400","#ff4b57","#3ddc84","#25e0d6","#ff9d3d","#c084fc","#ff7bac"];
+    for(let b=0;b<5;b++){ const cx=fx.width*(0.2+Math.random()*0.6), cy=fx.height*(0.2+Math.random()*0.45), col=cols[Math.floor(Math.random()*cols.length)], n=26;
+      for(let i=0;i<n;i++){ const a=(i/n)*6.283185, sp=1.5+Math.random()*3.2; parts.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,col,delay:b*8}); } }
+    if(!fxOn){ fxOn=true; fxLast=performance.now(); requestAnimationFrame(loopFx); } }
+  function loopFx(ts){ const dt=Math.min(40,ts-fxLast); fxLast=ts; fctx.clearRect(0,0,fx.width,fx.height); let vivas=0;
+    for(const p of parts){ if(p.delay>0){ p.delay-=1; vivas++; continue; }
+      p.x+=p.vx*(dt/16.67); p.y+=p.vy*(dt/16.67); p.vy+=0.06*(dt/16.67); p.vx*=0.99; p.life-=0.012*(dt/16.67);
+      if(p.life>0){ vivas++; fctx.globalAlpha=Math.max(0,p.life); fctx.fillStyle=p.col; fctx.beginPath(); fctx.arc(p.x,p.y,3,0,6.28); fctx.fill(); } }
+    fctx.globalAlpha=1; if(vivas>0) requestAnimationFrame(loopFx); else fxOn=false; }
+
+  // Imprimir / Descargar (Arial 12)
+  $('pbtnImprimir').addEventListener('click',()=>window.print());
+  $('pbtnDescargar').addEventListener('click',()=>{
+    if(!actual) return; const letras=["a","b","c"];
+    const ops=actual.opciones.map((o,i)=>`<li>${letras[i]}) ${o}${actual.unidad?(' '+actual.unidad):''}</li>`).join("");
+    const pasos=actual.pasos.map(s=>`<li>${s}</li>`).join("");
+    const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Problema de multiplicación</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;max-width:720px;margin:24px auto;padding:0 16px;color:#111;}
+h1{font-size:15pt;} h2{font-size:13pt;} .enun{border-left:4px solid #d4a300;background:#fff8dc;padding:12px 14px;border-radius:8px;}
+ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px solid #3ddc84;border-radius:8px;padding:10px 12px;font-weight:bold;}
+.cred{margin-top:24px;font-size:10pt;color:#666;font-style:italic;} hr{border:none;border-top:2px dashed #bbb;margin:18px 0;}</style></head>
+<body><h1>Problema de las tablas de multiplicar</h1><div class="fig">${actual.figura||""}</div>
+<p class="enun">${actual.texto}</p><p><b>Opciones:</b></p><ol type="a">${ops}</ol>
+<hr><h2>Solución paso a paso</h2><ol>${pasos}</ol>
+<p class="resp">Respuesta correcta: ${actual.correcta}${actual.unidad?(' '+actual.unidad):''}</p>
+<p class="cred">Elaborado por Alberto Jiménez Ruiz · Asesor Regional de Matemática · DRE Cartago · DAP 2026</p></body></html>`;
+    const blob=new Blob([doc],{type:"text/html;charset=utf-8"});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="problema-multiplicacion.html";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  });
+
+  $('pbtnNuevo').addEventListener('click',nuevoProblema);
+
+  // Abrir / cerrar desde el menú del juego
+  $('btnAbrirProblemas').addEventListener('click',()=>{ $('problemas').classList.add('show'); if(!iniciado){ iniciado=true; nuevoProblema(); } });
+  $('pbtnMenu').addEventListener('click',()=>{ $('problemas').classList.remove('show'); });
 })();
 </script>
 </body>
