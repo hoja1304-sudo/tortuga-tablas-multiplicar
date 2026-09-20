@@ -215,7 +215,7 @@
   let frutas=[];
   const FRUTA_COL=["#ff4b57","#ff9d3d","#c084fc","#ffd400","#7bd64f","#ff7bac"];
 
-  const turtle={x:100,y:250,r:34,face:1,anim:0,ang:0};
+  const turtle={x:100,y:250,r:34,face:1,anim:0,ang:0,dir4:'R'};
   let mouse={x:100,y:250,active:false};
   let aimX=0, aimY=0;        // punto guía (correa) que se dibuja junto a la tortuga
   let nubes=[], last=0;
@@ -519,9 +519,9 @@
     if(!chocaPared(turtle.x+mvx,turtle.y,rr)) turtle.x+=mvx;
     if(!chocaPared(turtle.x,turtle.y+mvy,rr)) turtle.y+=mvy;
     if(Math.abs(mvx)>0.3) turtle.face=mvx>0?1:-1;
-    // orientar la tortuga (vista superior) hacia donde avanza
-    if(Math.hypot(dx,dy)>1){ const ta=Math.atan2(dy,dx); let da=ta-turtle.ang;
-      while(da>Math.PI)da-=6.283185; while(da<-Math.PI)da+=6.283185; turtle.ang+=da*0.28; }
+    // dirección dominante para elegir el diseño: lado (izq/der) o vista superior (arriba/abajo)
+    if(Math.abs(mvx)>=Math.abs(mvy)){ if(Math.abs(mvx)>0.15) turtle.dir4=mvx>0?'R':'L'; }
+    else { if(Math.abs(mvy)>0.15) turtle.dir4=mvy>0?'D':'U'; }
     turtle.anim += (mv>0.5?dt*0.02:dt*0.005);
   }
 
@@ -615,8 +615,8 @@
   }
 
   // Tortuga vista DESDE ARRIBA (para el laberinto): caparazón desde arriba, cabeza al frente, 4 patas.
-  function drawTortugaTop(){
-    const r=turtle.r; ctx.save(); ctx.translate(turtle.x-camX,turtle.y); ctx.rotate(turtle.ang);
+  function drawTortugaTop(ang){
+    const r=turtle.r; ctx.save(); ctx.translate(turtle.x-camX,turtle.y); ctx.rotate(ang);
     const paso=Math.sin(turtle.anim*2)*r*0.12;
     // patas (4)
     ctx.fillStyle="#2e9e4f";
@@ -668,7 +668,13 @@
     if(escenario==="laberinto") drawLaberinto(); else drawFondo();
     for(const f of frutas) drawFruta(f);
     drawCursor();
-    if(estado==="jugando"||estado==="fin"){ if(escenario==="laberinto") drawTortugaTop(); else drawTortuga(); }
+    if(estado==="jugando"||estado==="fin"){
+      if(escenario==="laberinto"){
+        if(turtle.dir4==='U') drawTortugaTop(-Math.PI/2);        // sube → caparazón desde arriba, cabeza arriba
+        else if(turtle.dir4==='D') drawTortugaTop(Math.PI/2);    // baja → caparazón desde arriba, cabeza abajo
+        else { turtle.face=(turtle.dir4==='L')?-1:1; drawTortuga(); }  // izq/der → vista lateral
+      } else drawTortuga();
+    }
   }
   function loop(ts){ const dt=Math.min(50,ts-last||16.67); last=ts; update(dt); draw(); requestAnimationFrame(loop); }
 
