@@ -205,11 +205,15 @@
   // ---------- Resize (paisaje 16:9) ----------
   function resize(){
     const wrap=document.getElementById('wrap');
-    const availW=wrap.clientWidth, availH=wrap.clientHeight, aspect=16/9;
+    const availW=wrap.clientWidth, availH=wrap.clientHeight;
     const oldW=W, oldH=H;
-    let w=availW, h=w/aspect;
-    if(h>availH){ h=availH; w=h*aspect; }
-    w=Math.min(w,1024); h=w/aspect;
+    // Proporción adaptable: usa el espacio disponible, apaisada en pantallas anchas
+    // y más cuadrada/vertical en celular (para que el laberinto no quede diminuto).
+    const maxAsp=1.9, minAsp=0.78;
+    let w=availW, h=availH;
+    if(w/h > maxAsp) w=h*maxAsp;
+    if(w/h < minAsp) h=w/minAsp;
+    w=Math.min(w,1024); h=Math.min(h,760);
     W=Math.round(w); H=Math.round(h);
     DPR=Math.min(window.devicePixelRatio||1,2);
     canvas.style.width=W+"px"; canvas.style.height=H+"px";
