@@ -131,6 +131,7 @@
 
   const turtle={x:100,y:250,r:34,face:1,anim:0};
   let mouse={x:100,y:250,active:false};
+  let aimX=0, aimY=0;        // punto guía (correa) que se dibuja junto a la tortuga
   let nubes=[], last=0;
   let escenario="paisaje";   // paisaje | laberinto
   let paredes=[];            // laberinto: paredes en fracciones {x,y,w,h}
@@ -403,8 +404,11 @@
   function moverPaisaje(dt){
     camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
     const tx=mouse.active?(camX+mouse.x):turtle.x, ty=mouse.active?mouse.y:turtle.y;
-    const dx=tx-turtle.x, dy=ty-turtle.y;
-    const maxV=W*0.0095, ease=0.14;
+    let dx=tx-turtle.x, dy=ty-turtle.y;
+    const L=turtle.r*2.4, d=Math.hypot(dx,dy)||1;          // correa: el guía no se aleja de la tortuga
+    if(d>L){ dx=dx/d*L; dy=dy/d*L; }
+    aimX=turtle.x+dx; aimY=turtle.y+dy;
+    const maxV=W*0.0095, ease=0.18;
     let mvx=dx*ease, mvy=dy*ease; const mv=Math.hypot(mvx,mvy);
     if(mv>maxV){ mvx=mvx/mv*maxV; mvy=mvy/mv*maxV; }
     turtle.x+=mvx*(dt/16.67); turtle.y+=mvy*(dt/16.67);
@@ -417,8 +421,11 @@
   function moverLaberinto(dt){
     camX=0;
     const tx=mouse.active?mouse.x:turtle.x, ty=mouse.active?mouse.y:turtle.y;
-    const dx=tx-turtle.x, dy=ty-turtle.y;
-    const maxV=W*0.0072, ease=0.14;
+    let dx=tx-turtle.x, dy=ty-turtle.y;
+    const L=turtle.r*2.2, d=Math.hypot(dx,dy)||1;          // correa: el guía sigue pegado a la tortuga
+    if(d>L){ dx=dx/d*L; dy=dy/d*L; }
+    aimX=turtle.x+dx; aimY=turtle.y+dy;
+    const maxV=W*0.0072, ease=0.18;
     let mvx=dx*ease, mvy=dy*ease; const mv=Math.hypot(mvx,mvy);
     if(mv>maxV){ mvx=mvx/mv*maxV; mvy=mvy/mv*maxV; }
     mvx*=dt/16.67; mvy*=dt/16.67;
@@ -518,8 +525,9 @@
     ctx.restore();
   }
 
-  function drawCursor(){ if(!mouse.active||estado!=="jugando") return; ctx.save(); ctx.strokeStyle="rgba(255,255,255,.4)"; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(mouse.x,mouse.y,7,0,6.28); ctx.moveTo(mouse.x-11,mouse.y); ctx.lineTo(mouse.x-4,mouse.y); ctx.moveTo(mouse.x+4,mouse.y); ctx.lineTo(mouse.x+11,mouse.y); ctx.stroke(); ctx.restore(); }
+  function drawCursor(){ if(!mouse.active||estado!=="jugando") return; const ax=aimX-camX, ay=aimY;
+    ctx.save(); ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.fillStyle="rgba(255,255,255,.25)"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(ax,ay,6,0,6.28); ctx.fill(); ctx.stroke(); ctx.restore(); }
 
   function drawLaberinto(){
     const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#a7e4ff"); g.addColorStop(1,"#d7f3d0");
