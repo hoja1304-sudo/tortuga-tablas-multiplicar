@@ -189,7 +189,7 @@
       <canvas id="pfx"></canvas>
     </section>
     <section id="psecSol" class="hidden">
-      <div id="psolLock">🙂 Responde primero el problema para ver la solución paso a paso.</div>
+      <div id="psolLock">🙂 La solución paso a paso aparece solo si tu respuesta es <b>incorrecta</b>.</div>
       <div id="psolContent" class="hidden">
         <h3>Solución paso a paso</h3>
         <ol id="ppasos"></ol>
@@ -197,7 +197,6 @@
       </div>
     </section>
   </div>
-  <div class="pcred">Elaborado por <b>Alberto Jiménez Ruiz</b> · Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
 </div>
 
 <script>
@@ -802,9 +801,11 @@
       fb.innerHTML='<span class="emoji">🎉🥳</span>¡Muy bien! ¡Respuesta correcta!'; fuegos();
     } else { btn.classList.add('no');
       const idx=actual.opciones.indexOf(actual.correcta); const btns=document.querySelectorAll('#problemas .opt'); if(btns[idx]) btns[idx].classList.add('ok');
-      fb.className="mal"; fb.innerHTML='<span class="emoji">❌</span>Revisa la <b>solución paso a paso</b> en la otra pestaña.'; }
+      fb.className="mal"; fb.innerHTML='<span class="emoji">❌</span>Revisa la <b>solución paso a paso</b> en la otra pestaña.';
+      // La solución solo se muestra cuando la respuesta es INCORRECTA
+      $('pTabSol').classList.remove('lock'); $('psolLock').classList.add('hidden'); $('psolContent').classList.remove('hidden');
+    }
     $('paciertos').textContent=aciertos; $('pintentos').textContent=intentos;
-    $('pTabSol').classList.remove('lock'); $('psolLock').classList.add('hidden'); $('psolContent').classList.remove('hidden');
   }
   function verTab(t){
     document.querySelectorAll('#problemas .ptab').forEach(x=>x.classList.toggle('sel',x.dataset.ptab===t));
@@ -850,9 +851,26 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
 
   $('pbtnNuevo').addEventListener('click',nuevoProblema);
 
-  // Abrir / cerrar desde el menú del juego
-  $('btnAbrirProblemas').addEventListener('click',()=>{ $('problemas').classList.add('show'); if(!iniciado){ iniciado=true; nuevoProblema(); } });
-  $('pbtnMenu').addEventListener('click',()=>{ $('problemas').classList.remove('show'); });
+  // Abrir Problemas en una HOJA INDEPENDIENTE (nueva pestaña del mismo archivo)
+  function modoIndependiente(){
+    const h=document.querySelector('header'); if(h)h.style.display='none';
+    const hud=$('hud'); if(hud)hud.style.display='none';
+    const wrap=$('wrap'); if(wrap)wrap.style.display='none';
+    const ft=document.querySelector('footer'); if(ft)ft.style.display='none';
+    document.body.style.justifyContent='flex-start';
+    $('problemas').classList.add('show');
+    if(!iniciado){ iniciado=true; nuevoProblema(); }
+  }
+  $('btnAbrirProblemas').addEventListener('click',()=>{
+    const w=window.open(location.href.split('#')[0]+'#problemas','_blank');
+    if(!w){ modoIndependiente(); }   // si el navegador bloquea la pestaña, se abre en la misma
+  });
+  $('pbtnMenu').addEventListener('click',()=>{
+    // volver al juego (menú principal)
+    location.href=location.href.split('#')[0];
+  });
+  // Si esta hoja se abrió como Problemas, mostrar solo los problemas
+  if(location.hash==='#problemas'){ modoIndependiente(); }
 })();
 </script>
 </body>
