@@ -924,9 +924,9 @@
     {rank:2, make:()=>{ const dep=r(5,10),sac=r(2,4),q=dep-sac,t=q*10;
       return {texto:`Juan tiene una alcancía donde deposita monedas de <b>10 colones</b>. Colocó <b>${dep} monedas</b> el martes, pero el jueves <b>sacó ${sac} monedas</b>. ¿Cuánto dinero, en colones, le queda en la alcancía?`,correcta:t,unidad:"colones",
         pasos:[`Monedas que quedan: <b>${dep} − ${sac} = ${q}</b>.`,`Cada moneda vale <b>10</b> colones.`,`Multiplicamos: <b>${q} × 10 = ${t}</b>.`,`Respuesta: le quedan <b>${t} colones</b>.`]};}},
-    {rank:2, make:()=>{ const n=r(3,7),c=[10,20,25][r(0,2)],gasto=n*c,bill=(Math.ceil(gasto/50)+1)*50,vuelto=bill-gasto;
-      return {texto:`Ana compró <b>${n} lápices</b> a <b>${c} colones</b> cada uno y pagó con un billete de <b>${bill} colones</b>. ¿Cuánto dinero le devolvieron?`,correcta:vuelto,unidad:"colones",
-        pasos:[`Costo total: <b>${n} × ${c} = ${gasto}</b> colones.`,`Pagó con <b>${bill}</b> colones.`,`Vuelto: <b>${bill} − ${gasto} = ${vuelto}</b>.`,`Respuesta: le devolvieron <b>${vuelto} colones</b>.`]};}},
+    {rank:2, make:()=>{ const n=r(3,7),c=[10,25,50][r(0,2)],gasto=n*c,moneda=(gasto<100?100:500),vuelto=moneda-gasto;
+      return {texto:`Ana compró <b>${n} lápices</b> a <b>${c} colones</b> cada uno y pagó con una moneda de <b>${moneda} colones</b>. ¿Cuánto dinero le devolvieron?`,correcta:vuelto,unidad:"colones",
+        pasos:[`Costo total: <b>${n} × ${c} = ${gasto}</b> colones.`,`Pagó con una moneda de <b>${moneda}</b> colones.`,`Vuelto: <b>${moneda} − ${gasto} = ${vuelto}</b>.`,`Respuesta: le devolvieron <b>${vuelto} colones</b>.`]};}},
     {rank:2, make:()=>{ const f=r(3,8),s=r(4,9),t=f*s;
       return {texto:`En un teatro hay <b>${f} filas</b> y en cada fila caben <b>${s} sillas</b>. ¿Cuántas sillas hay en total?`,correcta:t,unidad:"sillas",
         pasos:[`Hay <b>${f}</b> filas.`,`Cada fila tiene <b>${s}</b> sillas.`,`Multiplicamos: <b>${f} × ${s} = ${t}</b>.`,`Respuesta: <b>${t} sillas</b>.`]};}},
