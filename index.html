@@ -55,6 +55,10 @@
   .escbtn{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:7px 16px;font-size:15px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s,border-color .12s;}
   .escbtn:hover{transform:translateY(-2px);}
   .escbtn.sel{border-color:var(--amarillo);background:rgba(255,212,0,.18);color:var(--amarillo);}
+  .tituloTabla{font-size:clamp(15px,3.6vw,22px)!important;line-height:1.3;max-width:640px;}
+  #ovInstrucciones{z-index:30;}
+  .instr{text-align:left;max-width:600px;font-size:clamp(14px,3.4vw,17px);line-height:1.5;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px;}
+  .instr p{margin:0 0 10px;} .instr p:last-child{margin-bottom:0;} .instr b{color:var(--amarillo);}
   #gridTablas{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;width:min(94vw,560px);max-height:44vh;overflow:auto;padding:4px 2px;}
   .tabchip{background:rgba(255,255,255,.08);border:2px solid rgba(61,220,132,.6);border-radius:12px;color:#fff;padding:9px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .1s,background .1s;}
   .tabchip:hover{transform:translateY(-2px);background:rgba(61,220,132,.15);}
@@ -143,13 +147,14 @@
 
   <!-- Menú: elegir tabla -->
   <div class="overlay" id="ovMenu">
-    <h2>Elige la tabla de multiplicar</h2>
     <div class="escenarios">
       <span class="escLbl">Escenario:</span>
       <button class="escbtn sel" data-esc="oceano">🌊 Océano</button>
       <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
+      <button class="probbtn" id="btnInstrucciones">📖 Instrucciones</button>
     </div>
+    <h2 class="tituloTabla">Elige la tabla de multiplicar con la cual deseas iniciar el juego que seleccionaste</h2>
     <div id="gridTablas"></div>
     <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
     <div class="mini">Mueve la 🐢 con el <b>mouse</b> (o el dedo). En el <b>Océano</b> atrapa el pez con el resultado y esquiva los erizos 🦔; en el <b>Laberinto</b> recorre los pasillos. Con la voz <b>activada</b> escuchas la operación; <b>desactivada</b>, la lee el niño.</div>
@@ -165,6 +170,19 @@
       <button class="btn gris" id="btnRepetir">🔁 Repetir</button>
       <button class="btn gris" id="btnMenu">🏠 Menú</button>
     </div>
+  </div>
+
+  <!-- Instrucciones -->
+  <div class="overlay hidden" id="ovInstrucciones">
+    <h2>📖 Instrucciones</h2>
+    <div class="instr">
+      <p><b>1.</b> Primero elige un escenario, <b>Océano</b> o <b>Laberinto</b>, para practicar las tablas de multiplicar usando la memoria.</p>
+      <p><b>2.</b> Luego selecciona la <b>tabla de multiplicar</b> con la que deseas iniciar.</p>
+      <p><b>3.</b> El personaje del juego es una <b>tortuga</b> que se mueve con el <b>mouse</b> en la dirección que le indiques, y debe <b>comerse el resultado</b> de la tabla de multiplicar que te indiquen aleatoriamente.</p>
+      <p><b>4.</b> Si tocas el botón de <b>audio</b> lo desactivas; si lo tocas otra vez lo activas.</p>
+      <p><b>5.</b> El botón de <b>Problemas</b> te lleva a una sección de problemas relacionados con las tablas de multiplicar.</p>
+    </div>
+    <button class="btn verde" id="btnCerrarInstr">✅ Entendido</button>
   </div>
 </div>
 
@@ -787,6 +805,8 @@
   document.getElementById('btnRepetir').addEventListener('click',()=>{ iniciar(tabla); });
   document.getElementById('btnMenu').addEventListener('click',irAMenu);
   document.getElementById('btnMenuJuego').addEventListener('click',irAMenu);
+  document.getElementById('btnInstrucciones').addEventListener('click',()=>document.getElementById('ovInstrucciones').classList.remove('hidden'));
+  document.getElementById('btnCerrarInstr').addEventListener('click',()=>document.getElementById('ovInstrucciones').classList.add('hidden'));
   document.querySelectorAll('.escbtn').forEach(b=>b.addEventListener('click',()=>{
     escenario=b.dataset.esc;
     document.querySelectorAll('.escbtn').forEach(x=>x.classList.toggle('sel',x===b));
