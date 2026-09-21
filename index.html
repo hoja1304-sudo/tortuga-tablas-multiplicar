@@ -75,6 +75,8 @@
   footer{font-size:11px;opacity:.5;padding:2px 0 6px;text-align:center;}
   .probbtn{background:rgba(255,212,0,.18);border:2px solid var(--amarillo);color:var(--amarillo);border-radius:20px;padding:7px 16px;font-size:15px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s;}
   .probbtn:hover{transform:translateY(-2px);background:rgba(255,212,0,.3);}
+  .plusbtn{background:rgba(192,132,252,.2)!important;border-color:#c084fc!important;color:#e6ccff!important;}
+  .plusbtn:hover{background:rgba(192,132,252,.34)!important;}
   #btnMenuJuego{cursor:pointer;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);transition:transform .1s,background .12s;}
   #btnMenuJuego:hover{background:rgba(255,255,255,.22);transform:translateY(-2px);}
   #btnMenuJuego:active{transform:translateY(1px);}
@@ -161,6 +163,7 @@
         <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
       </div>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
+      <button class="probbtn plusbtn" id="btnNivelMas">➕ Nivel +</button>
       <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
       <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
     </div>
@@ -885,7 +888,7 @@
   const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-  let aciertos=0, intentos=0, nivel=1, actual=null, respondido=false, iniciado=false;
+  let aciertos=0, intentos=0, nivel=1, actual=null, respondido=false, iniciado=false, modoPlus=false;
 
   const CELCOL=["#ffd400","#ff9d3d","#3ddc84","#25e0d6","#7b9dff","#ff7bac","#c084fc","#ff6b6b","#6dd47e"];
   function svgCuadrado(n,px){
@@ -943,6 +946,28 @@
         pasos:[`Figura 1: <b>1 × 1 = 1</b>`,`Figura 2: <b>2 × 2 = 4</b>`,`Figura 3: <b>3 × 3 = 9</b>`,`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: se divide en <b>${t} cuadrados</b>.`]};}}
   ];
 
+  // ===== Retos de Nivel + (tablas del 2 al 10, varios pasos) =====
+  const PLANTILLAS_PLUS=[
+    {make:()=>{ const n=r(4,9), t=n*n*n;
+      return {texto:`En una microempresa de chocolates, en cada caja se colocan <b>${n} chocolates</b>. Se apilan <b>${n} cajas</b> formando una columna y en la mesa se colocan <b>${n} columnas</b>. ¿Cuántos chocolates hay en total?`, correcta:t, unidad:"chocolates", dist:[n*n, n*n*(n-1)],
+        pasos:[`Chocolates por columna: <b>${n} × ${n} = ${n*n}</b>.`,`Hay ${n} columnas: <b>${n*n} × ${n} = ${t}</b>.`,`Respuesta: <b>${t} chocolates</b>.`]};}},
+    {make:()=>{ const k=[6,8][r(0,1)], d=r(3,9), jorge=k*d, karla=jorge/2;
+      return {texto:`La edad de Jorge es <b>${k} veces</b> la de David, y la edad de Karla es la <b>mitad</b> de la de Jorge. Si David tiene <b>${d} años</b>, ¿cuál es la edad de Karla?`, correcta:karla, unidad:"años", dist:[jorge, d],
+        pasos:[`Edad de Jorge: <b>${k} × ${d} = ${jorge}</b>.`,`Karla es la mitad: <b>${jorge} ÷ 2 = ${karla}</b>.`,`Respuesta: <b>${karla} años</b>.`]};}},
+    {make:()=>{ const n=r(6,9), t=n*n;
+      return {texto:`Observa las figuras anteriores. Si el patrón continúa, ¿en cuántos cuadrados se dividirá la <b>figura ${n}</b>?`, correcta:t, unidad:"cuadrados", figura:figuraPatron(), dist:[n*2, (n-1)*(n-1)],
+        pasos:[`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: se divide en <b>${t} cuadrados</b>.`]};}},
+    {make:()=>{ const sec=r(3,6), fil=r(4,8), asi=r(5,9), t=sec*fil*asi;
+      return {texto:`Un estadio tiene <b>${sec} sectores</b>. Cada sector tiene <b>${fil} filas</b> y en cada fila hay <b>${asi} asientos</b>. ¿Cuántos asientos hay en total?`, correcta:t, unidad:"asientos", dist:[fil*asi, sec+fil+asi],
+        pasos:[`Asientos por sector: <b>${fil} × ${asi} = ${fil*asi}</b>.`,`Hay ${sec} sectores: <b>${fil*asi} × ${sec} = ${t}</b>.`,`Respuesta: <b>${t} asientos</b>.`]};}},
+    {make:()=>{ const n=r(4,9), t=n*12;
+      return {texto:`Una pulpería recibe <b>${n} cartones</b> de huevos y cada cartón trae <b>12 huevos</b> (una docena). ¿Cuántos huevos recibió?`, correcta:t, unidad:"huevos", dist:[n+12, (n-1)*12],
+        pasos:[`Cada cartón: <b>12</b> huevos.`,`Son <b>${n}</b> cartones.`,`Multiplicamos: <b>12 × ${n} = ${t}</b>.`,`Respuesta: <b>${t} huevos</b>.`]};}},
+    {make:()=>{ const est=r(3,6), rep=r(3,6), lib=r(6,9), t=est*rep*lib;
+      return {texto:`Una biblioteca tiene <b>${est} estantes</b>. Cada estante tiene <b>${rep} repisas</b> y en cada repisa hay <b>${lib} libros</b>. ¿Cuántos libros hay en total?`, correcta:t, unidad:"libros", dist:[rep*lib, est*rep],
+        pasos:[`Libros por estante: <b>${rep} × ${lib} = ${rep*lib}</b>.`,`Hay ${est} estantes: <b>${rep*lib} × ${est} = ${t}</b>.`,`Respuesta: <b>${t} libros</b>.`]};}}
+  ];
+
   function generarOpciones(correcta, dist){
     const set=new Set([correcta]);
     if(dist) dist.forEach(d=>{ if(set.size<3 && d>0 && d!==correcta) set.add(d); });
@@ -953,9 +978,9 @@
   }
 
   function nuevoProblema(){
-    nivel=Math.min(3,1+Math.floor(aciertos/2));   // dificultad interna (no se muestra)
-    // 25% del tiempo cualquier tipo (para que aparezcan cuadrados y edades); resto según nivel
-    const pool=(Math.random()<0.25)?PLANTILLAS:PLANTILLAS.filter(p=>p.rank<=nivel);
+    let pool;
+    if(modoPlus){ pool=PLANTILLAS_PLUS; }
+    else { nivel=Math.min(3,1+Math.floor(aciertos/2)); pool=(Math.random()<0.25)?PLANTILLAS:PLANTILLAS.filter(p=>p.rank<=nivel); }
     const p=pool[r(0,pool.length-1)]; const prob=p.make();
     prob.opciones=generarOpciones(prob.correcta, prob.dist); actual=prob; respondido=false;
     $('pfigura').innerHTML=prob.figura||"";
@@ -1023,26 +1048,34 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
 
   $('pbtnNuevo').addEventListener('click',nuevoProblema);
 
-  // Abrir Problemas en una HOJA INDEPENDIENTE (nueva pestaña del mismo archivo)
-  function modoIndependiente(){
+  // Abrir Problemas / Nivel + en una HOJA INDEPENDIENTE (nueva pestaña del mismo archivo)
+  function mostrarSeccion(plus){
+    modoPlus=!!plus;
+    document.querySelector('#problemas h2').innerHTML = plus ? "➕ Nivel + · Retos de multiplicación" : "📝 Problemas · Tablas de multiplicar";
+    document.querySelector('#problemas .psub').textContent = plus ? "Retos de varios pasos con las tablas del 2 al 10." : "Lee el problema y elige la respuesta correcta.";
+    aciertos=0; intentos=0; $('paciertos').textContent=0; $('pintentos').textContent=0;
+    $('problemas').classList.add('show'); iniciado=true; nuevoProblema();
+  }
+  function modoIndependiente(plus){
     const h=document.querySelector('header'); if(h)h.style.display='none';
     const hud=$('hud'); if(hud)hud.style.display='none';
     const wrap=$('wrap'); if(wrap)wrap.style.display='none';
     const ft=document.querySelector('footer'); if(ft)ft.style.display='none';
     document.body.style.justifyContent='flex-start';
-    $('problemas').classList.add('show');
-    if(!iniciado){ iniciado=true; nuevoProblema(); }
+    mostrarSeccion(plus);
   }
   $('btnAbrirProblemas').addEventListener('click',()=>{
     const w=window.open(location.href.split('#')[0]+'#problemas','_blank');
-    if(!w){ modoIndependiente(); }   // si el navegador bloquea la pestaña, se abre en la misma
+    if(!w){ mostrarSeccion(false); }
   });
-  $('pbtnMenu').addEventListener('click',()=>{
-    // volver al juego (menú principal)
-    location.href=location.href.split('#')[0];
+  $('btnNivelMas').addEventListener('click',()=>{
+    const w=window.open(location.href.split('#')[0]+'#nivelmas','_blank');
+    if(!w){ mostrarSeccion(true); }
   });
-  // Si esta hoja se abrió como Problemas, mostrar solo los problemas
-  if(location.hash==='#problemas'){ modoIndependiente(); }
+  $('pbtnMenu').addEventListener('click',()=>{ location.href=location.href.split('#')[0]; });
+  // Si esta hoja se abrió como Problemas o Nivel +
+  if(location.hash==='#problemas'){ modoIndependiente(false); }
+  else if(location.hash==='#nivelmas'){ modoIndependiente(true); }
 })();
 </script>
 </body>
