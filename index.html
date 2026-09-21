@@ -750,8 +750,8 @@
       return {texto:`La edad de Jorge es <b>nueve veces</b> la edad de Cristian, y la edad de Priscila es <b>18 años menor</b> que la de Jorge. Si Cristian tiene <b>${c} años</b>, ¿cuál es la edad de Priscila?`,correcta:t,unidad:"años",
         pasos:[`Edad de Jorge: <b>9 × ${c} = ${jorge}</b>.`,`Priscila es 18 años menor: <b>${jorge} − 18 = ${t}</b>.`,`Respuesta: Priscila tiene <b>${t} años</b>.`]};}},
     {rank:3, make:()=>{ const n=r(4,8),t=n*n;
-      return {texto:`Observa el patrón: la figura 1 tiene 1 cuadradito, la figura 2 tiene 4 y la figura 3 tiene 9. Si el patrón continúa, ¿cuántos cuadraditos tendrá la <b>figura ${n}</b>?`,correcta:t,unidad:"cuadraditos",figura:figuraPatron(),
-        pasos:[`Figura 1: <b>1 × 1 = 1</b>`,`Figura 2: <b>2 × 2 = 4</b>`,`Figura 3: <b>3 × 3 = 9</b>`,`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: <b>${t} cuadraditos</b>.`]};}},
+      return {texto:`Observa las figuras anteriores. Si el patrón continúa, ¿en cuántos cuadrados se dividirá la <b>figura ${n}</b>?`,correcta:t,unidad:"cuadrados",figura:figuraPatron(),
+        pasos:[`Figura 1: <b>1 × 1 = 1</b>`,`Figura 2: <b>2 × 2 = 4</b>`,`Figura 3: <b>3 × 3 = 9</b>`,`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: se divide en <b>${t} cuadrados</b>.`]};}},
     {rank:3, make:()=>{ const cajas=r(3,6),porCaja=r(4,8),t=cajas*porCaja*2;
       return {texto:`Una tienda recibe <b>${cajas} cajas</b> y cada caja trae <b>${porCaja} pares</b> de medias. ¿Cuántas medias (unidades) recibió en total? <i>(cada par son 2 medias)</i>`,correcta:t,unidad:"medias",
         pasos:[`Pares en total: <b>${cajas} × ${porCaja} = ${cajas*porCaja}</b>.`,`Cada par son <b>2</b> medias.`,`Multiplicamos: <b>${cajas*porCaja} × 2 = ${t}</b>.`,`Respuesta: <b>${t} medias</b>.`]};}}
