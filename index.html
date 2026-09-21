@@ -425,7 +425,7 @@
   // Las manzanas se desplazan de celda a celda por los pasillos abiertos del laberinto
   function moverFrutasLaberinto(dt){
     const m=mazeMeta; if(!m||!m.cells) return;
-    const step=Math.min(W,H)*0.0028*(dt/16.67);
+    const step=Math.min(W,H)*0.0016*(dt/16.67);
     for(const f of frutas){
       if(f.comida) continue;
       const cpx=m.margin+(f.tcx+0.5)*m.cw, cpy=m.margin+(f.tcy+0.5)*m.ch;
