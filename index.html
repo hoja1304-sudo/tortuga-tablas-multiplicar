@@ -903,7 +903,7 @@
     {rank:1, make:()=>{ const km=r(2,10),t=km*6;
       return {texto:`Daniel sale todas las mañanas, antes de ir a su trabajo, a correr <b>${km} km</b>. ¿Cuántos kilómetros recorrió de <b>lunes a sábado</b>?`,correcta:t,unidad:"km",
         pasos:[`De lunes a sábado hay <b>6 días</b>.`,`Cada día corre <b>${km} km</b>.`,`Multiplicamos: <b>${km} × 6 = ${t}</b>.`,`Respuesta: recorrió <b>${t} km</b>.`]};}},
-    {rank:1, make:()=>{ const n=r(3,10),c=[5,10,20,25][r(0,3)],t=n*c;
+    {rank:1, make:()=>{ const c=[10,25,50][r(0,2)], maxN=Math.floor(100/c), n=r(2,maxN), t=n*c;
       return {texto:`Karla compró en una soda <b>${n} confites</b> a <b>${c} colones</b> cada uno. ¿Cuánto pagó Karla?`,correcta:t,unidad:"colones",
         pasos:[`Compró <b>${n}</b> confites.`,`Cada confite cuesta <b>${c}</b> colones.`,`Multiplicamos: <b>${n} × ${c} = ${t}</b>.`,`Respuesta: pagó <b>${t} colones</b>.`]};}},
     {rank:1, make:()=>{ const h=r(2,6),k=r(3,9),t=h*k;
@@ -924,7 +924,7 @@
     {rank:2, make:()=>{ const dep=r(5,10),sac=r(2,4),q=dep-sac,t=q*10;
       return {texto:`Juan tiene una alcancía donde deposita monedas de <b>10 colones</b>. Colocó <b>${dep} monedas</b> el martes, pero el jueves <b>sacó ${sac} monedas</b>. ¿Cuánto dinero, en colones, le queda en la alcancía?`,correcta:t,unidad:"colones",
         pasos:[`Monedas que quedan: <b>${dep} − ${sac} = ${q}</b>.`,`Cada moneda vale <b>10</b> colones.`,`Multiplicamos: <b>${q} × 10 = ${t}</b>.`,`Respuesta: le quedan <b>${t} colones</b>.`]};}},
-    {rank:2, make:()=>{ const n=r(3,7),c=[10,25,50][r(0,2)],gasto=n*c,moneda=(gasto<100?100:500),vuelto=moneda-gasto;
+    {rank:2, make:()=>{ const c=[10,25][r(0,1)], maxN=Math.floor(90/c), n=r(2,maxN), gasto=n*c, moneda=100, vuelto=moneda-gasto;
       return {texto:`Ana compró <b>${n} lápices</b> a <b>${c} colones</b> cada uno y pagó con una moneda de <b>${moneda} colones</b>. ¿Cuánto dinero le devolvieron?`,correcta:vuelto,unidad:"colones",
         pasos:[`Costo total: <b>${n} × ${c} = ${gasto}</b> colones.`,`Pagó con una moneda de <b>${moneda}</b> colones.`,`Vuelto: <b>${moneda} − ${gasto} = ${vuelto}</b>.`,`Respuesta: le devolvieron <b>${vuelto} colones</b>.`]};}},
     {rank:2, make:()=>{ const f=r(3,8),s=r(4,9),t=f*s;
