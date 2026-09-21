@@ -234,6 +234,7 @@
   const WORLDMULT=2.4;      // el mundo es más ancho que la pantalla → paisaje con desplazamiento
   let estado="menu";        // menu | jugando | fin
   let tabla=2, currentM=1, objetivoVal=0, comidos=0;
+  let ordenM=[], mIdx=0;   // orden aleatorio en que se preguntan las multiplicaciones
   let tInicio=0,tActual=0,penal=0,coolMal=0;
   let frutas=[];
   const FRUTA_COL=["#ff4b57","#ff9d3d","#c084fc","#ffd400","#7bd64f","#ff7bac"];
@@ -360,7 +361,7 @@
     for(let i=0;i<8;i++) decoys.push({ valor:0, fx:Math.random()*0.94+0.03, fy:0.12+Math.random()*0.64,
       tipo:i%FISH_COL.length, bob:Math.random()*6.28, sp:(Math.random()<0.5?-1:1)*0.0004, ang:0 });
     for(let i=0;i<7;i++) erizos.push({ fx:0.08+Math.random()*0.88, fy:0.80+Math.random()*0.12,
-      vy:0.025+Math.random()*0.06, dx:(Math.random()<0.5?-1:1)*0.0006, esp:0.6+Math.random()*0.8 });
+      vy:0.011+Math.random()*0.025, dx:(Math.random()<0.5?-1:1)*0.0004, esp:0.6+Math.random()*0.8 });
     for(let i=0;i<12;i++) algas.push({ fx:Math.random(), h:0.10+Math.random()*0.14, ph:Math.random()*6.28, col:(Math.random()<0.5?"#2e9e4f":"#39c96f") });
     turtle.r=Math.max(20,H*0.075); frR=H*0.058;
     turtle.x=W*0.15; turtle.y=H*0.5; turtle.ang=0; camX=0;
@@ -459,6 +460,7 @@
 
   // ---------- Operación ----------
   function nuevaOperacion(){
+    currentM=ordenM[mIdx];
     objetivoVal=tabla*currentM;
     document.getElementById('operacion').textContent=tabla+" × "+currentM+" = ?";
     setTimeout(decirOperacion,180);
@@ -490,7 +492,8 @@
     if(escenario==="laberinto"){ generarLaberinto(N); }
     else { worldW=W*WORLDMULT; generarOceano(N); }
     turtle.face=1;
-    comidos=0; currentM=1; penal=0; coolMal=0; vidas=VIDAS_INI; invuln=0;
+    comidos=0; ordenM=[]; for(let m=1;m<=PRODS;m++) ordenM.push(m); shuffle(ordenM); mIdx=0;
+    penal=0; coolMal=0; vidas=VIDAS_INI; invuln=0;
     mouse.x=turtle.x-camX; mouse.y=turtle.y; mouse.active=false;
     tInicio=performance.now(); tActual=0;
     document.getElementById('retoLbl').textContent = (escenario==="laberinto")?"Come el número con el resultado":"Atrapa el pez con el resultado";
@@ -557,7 +560,7 @@
       for(const e of erizos){
         e.fy -= e.vy*(dt/1000); e.fx += e.dx*(dt/16.67);
         if(e.fx<0.02){e.fx=0.02;e.dx=Math.abs(e.dx);} if(e.fx>0.98){e.fx=0.98;e.dx=-Math.abs(e.dx);}
-        if(e.fy < -0.06){ e.fy=0.9+Math.random()*0.08; e.fx=0.04+Math.random()*0.92; e.vy=0.025+Math.random()*0.06; e.dx=(Math.random()<0.5?-1:1)*0.0006; }
+        if(e.fy < -0.06){ e.fy=0.9+Math.random()*0.08; e.fx=0.04+Math.random()*0.92; e.vy=0.011+Math.random()*0.025; e.dx=(Math.random()<0.5?-1:1)*0.0004; }
       }
       // erizos: quitan una vida y detienen a la tortuga
       if(invuln<=0){
@@ -585,7 +588,7 @@
           f.comida=true; f.pop=260; comidos++; sBien();
           flash("¡"+tabla+" × "+currentM+" = "+objetivoVal+"! ✓","bien"); actualizarHUD();
           if(comidos>=PRODS){ completarTabla(); return; }
-          currentM++; nuevaOperacion();
+          mIdx++; nuevaOperacion();
         }
         // Pez incorrecto o sin número: no pasa nada, no se muestra nada.
       }
