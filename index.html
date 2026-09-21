@@ -94,7 +94,8 @@
   #pfeedback.bien{color:var(--verde);} #pfeedback.mal{color:var(--rojo);}
   #problemas .pacc{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
   #pfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:0 16px 16px 16px;}
-  #psecSol h3{color:var(--amarillo);margin:0 0 10px;}
+  #psolInline{margin-top:14px;border-top:1px solid rgba(255,255,255,.18);padding-top:12px;}
+  #psolInline h3{color:var(--amarillo);margin:0 0 10px;}
   #ppasos{font-size:clamp(15px,3.3vw,18px);line-height:1.7;padding-left:22px;}
   #ppasos li{margin-bottom:5px;}
   #prespFinal{margin-top:12px;font-size:18px;font-weight:bold;background:rgba(61,220,132,.18);border:1px solid var(--verde);border-radius:10px;padding:11px 13px;color:#eafff2;}
@@ -112,8 +113,7 @@
     #problemas .pcard{border:1px solid #999;background:#fff;}
     #penunciado{background:#fff;color:#000;border-left:4px solid #000;}
     #problemas .opt{background:#fff;color:#000;border:1px solid #000;} #problemas .opt .letra{background:#000;color:#fff;}
-    #psecProb,#psecSol{display:block!important;} #psolLock{display:none!important;} #psolContent{display:block!important;}
-    #psecSol{margin-top:16px;border-top:2px dashed #999;padding-top:10px;} #psecSol h3{color:#000;} #prespFinal{background:#eee;color:#000;border:1px solid #000;}
+    #psolInline{border-top:2px dashed #999;} #psolInline h3{color:#000;} #prespFinal{background:#eee;color:#000;border:1px solid #000;}
   }
 </style>
 </head>
@@ -169,33 +169,24 @@
 <div id="problemas">
   <h2>📝 Problemas · Tablas de multiplicar</h2>
   <div class="psub">Lee el problema y elige la respuesta correcta. La dificultad aumenta con tus aciertos (tablas del 1 al 10).</div>
-  <div class="ptabs">
-    <button class="ptab sel" data-ptab="prob">📝 Problema</button>
-    <button class="ptab lock" data-ptab="sol" id="pTabSol">✅ Solución paso a paso</button>
-  </div>
   <div class="pcard">
-    <section id="psecProb">
-      <div class="pmeta"><span>Nivel <b id="pnivel">1</b></span><span>Aciertos: <b id="paciertos">0</b> / <b id="pintentos">0</b></span></div>
-      <div id="pfigura"></div>
-      <p id="penunciado">—</p>
-      <div id="popciones"></div>
-      <div id="pfeedback"></div>
-      <div class="pacc">
-        <button id="pbtnNuevo" class="btn verde">🔄 Nuevo problema</button>
-        <button id="pbtnImprimir" class="btn gris">🖨️ Imprimir</button>
-        <button id="pbtnDescargar" class="btn gris">⬇️ Descargar</button>
-        <button id="pbtnMenu" class="btn gris">🏠 Menú</button>
-      </div>
-      <canvas id="pfx"></canvas>
-    </section>
-    <section id="psecSol" class="hidden">
-      <div id="psolLock">🙂 La solución paso a paso aparece solo si tu respuesta es <b>incorrecta</b>.</div>
-      <div id="psolContent" class="hidden">
-        <h3>Solución paso a paso</h3>
-        <ol id="ppasos"></ol>
-        <p id="prespFinal"></p>
-      </div>
-    </section>
+    <div class="pmeta"><span>Nivel <b id="pnivel">1</b></span><span>Aciertos: <b id="paciertos">0</b> / <b id="pintentos">0</b></span></div>
+    <div id="pfigura"></div>
+    <p id="penunciado">—</p>
+    <div id="popciones"></div>
+    <div id="pfeedback"></div>
+    <div id="psolInline" class="hidden">
+      <h3>Solución paso a paso</h3>
+      <ol id="ppasos"></ol>
+      <p id="prespFinal"></p>
+    </div>
+    <div class="pacc">
+      <button id="pbtnNuevo" class="btn verde">🔄 Nuevo problema</button>
+      <button id="pbtnImprimir" class="btn gris">🖨️ Imprimir</button>
+      <button id="pbtnDescargar" class="btn gris">⬇️ Descargar</button>
+      <button id="pbtnMenu" class="btn gris">🏠 Menú</button>
+    </div>
+    <canvas id="pfx"></canvas>
   </div>
 </div>
 
@@ -786,8 +777,8 @@
       b.innerHTML='<span class="letra">'+letras[i]+'</span>'+op+(prob.unidad?(' '+prob.unidad):'');
       b.addEventListener('click',()=>responder(op,b)); cont.appendChild(b); });
     $('pfeedback').textContent=""; $('pfeedback').className="";
-    $('pTabSol').classList.add('lock'); $('psolContent').classList.add('hidden'); $('psolLock').classList.remove('hidden');
-    verTab('prob'); renderSolucion(prob);
+    // La solución permanece oculta y vacía hasta que el usuario seleccione una respuesta incorrecta
+    $('psolInline').classList.add('hidden'); $('ppasos').innerHTML=""; $('prespFinal').innerHTML="";
   }
   function renderSolucion(prob){
     const ol=$('ppasos'); ol.innerHTML=""; prob.pasos.forEach(s=>{ const li=document.createElement('li'); li.innerHTML=s; ol.appendChild(li); });
@@ -801,37 +792,12 @@
       fb.innerHTML='<span class="emoji">🎉🥳</span>¡Muy bien! ¡Respuesta correcta!'; fuegos();
     } else { btn.classList.add('no');
       const idx=actual.opciones.indexOf(actual.correcta); const btns=document.querySelectorAll('#problemas .opt'); if(btns[idx]) btns[idx].classList.add('ok');
-      fb.className="mal"; fb.innerHTML='<span class="emoji">❌</span>Revisa la <b>solución paso a paso</b> en la otra pestaña.';
-      // La solución solo se muestra cuando la respuesta es INCORRECTA
-      $('pTabSol').classList.remove('lock'); $('psolLock').classList.add('hidden'); $('psolContent').classList.remove('hidden');
+      fb.className="mal"; fb.innerHTML='<span class="emoji">❌</span>Observa la solución paso a paso.';
+      // La solución solo se genera y se muestra cuando la respuesta seleccionada es INCORRECTA
+      renderSolucion(actual); $('psolInline').classList.remove('hidden');
     }
     $('paciertos').textContent=aciertos; $('pintentos').textContent=intentos;
   }
-  function verTab(t){
-    document.querySelectorAll('#problemas .ptab').forEach(x=>x.classList.toggle('sel',x.dataset.ptab===t));
-    $('psecProb').classList.toggle('hidden',t!=='prob'); $('psecSol').classList.toggle('hidden',t!=='sol');
-  }
-  function abrirSolucion(){
-    if(!actual) return;
-    const pasos=actual.pasos.map(s=>`<li>${s}</li>`).join("");
-    const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Solución paso a paso</title>
-<style>body{font-family:Arial,Helvetica,sans-serif;font-size:12pt;max-width:720px;margin:24px auto;padding:0 16px;color:#111;}
-h1{font-size:15pt;} h2{font-size:13pt;} .enun{border-left:4px solid #d4a300;background:#fff8dc;padding:12px 14px;border-radius:8px;}
-ol{line-height:1.8;} .fig{margin:10px 0;text-align:center;} .resp{background:#e7f8ee;border:1px solid #3ddc84;border-radius:8px;padding:10px 12px;font-weight:bold;margin-top:14px;}
-.grid-fig{display:inline-block;margin:0 6px;text-align:center;vertical-align:top;} .grid-fig svg{border:1px solid #ccc;border-radius:6px;} .grid-fig span{display:block;font-size:10pt;margin-top:3px;}</style></head>
-<body><h1>Solución paso a paso</h1><div class="fig">${actual.figura||""}</div>
-<p class="enun">${actual.texto}</p><h2>Pasos</h2><ol>${pasos}</ol>
-<p class="resp">Respuesta correcta: ${actual.correcta}${actual.unidad?(' '+actual.unidad):''}</p></body></html>`;
-    const url=URL.createObjectURL(new Blob([doc],{type:"text/html;charset=utf-8"}));
-    const w=window.open(url,'_blank');
-    if(!w){ verTab('sol'); }   // si el navegador bloquea la pestaña, se muestra en la misma
-    setTimeout(()=>URL.revokeObjectURL(url),6000);
-  }
-  document.querySelectorAll('#problemas .ptab').forEach(tb=>tb.addEventListener('click',()=>{
-    if(tb.dataset.ptab==='sol'){ if(tb.classList.contains('lock')) return; abrirSolucion(); return; }
-    verTab(tb.dataset.ptab);
-  }));
-
   // Fuegos artificiales
   const fx=$('pfx'), fctx=fx.getContext('2d'); let parts=[], fxOn=false, fxLast=0;
   function resizeFx(){ const rc=fx.getBoundingClientRect(); fx.width=rc.width; fx.height=rc.height; }
