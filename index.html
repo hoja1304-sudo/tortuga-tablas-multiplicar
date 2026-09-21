@@ -67,6 +67,9 @@
   footer{font-size:11px;opacity:.5;padding:2px 0 6px;text-align:center;}
   .probbtn{background:rgba(255,212,0,.18);border:2px solid var(--amarillo);color:var(--amarillo);border-radius:20px;padding:7px 16px;font-size:15px;font-weight:bold;cursor:pointer;transition:transform .1s,background .12s;}
   .probbtn:hover{transform:translateY(-2px);background:rgba(255,212,0,.3);}
+  #btnMenuJuego{cursor:pointer;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);transition:transform .1s,background .12s;}
+  #btnMenuJuego:hover{background:rgba(255,255,255,.22);transform:translateY(-2px);}
+  #btnMenuJuego:active{transform:translateY(1px);}
   /* ===== Sección Problemas ===== */
   #problemas{position:fixed;inset:0;z-index:60;background:radial-gradient(circle at 50% -10%,#1b3a8a 0%,#0a1636 55%,#050b22 100%);display:none;flex-direction:column;align-items:center;padding:10px;overflow:auto;font-family:Arial,Helvetica,sans-serif;}
   #problemas.show{display:flex;}
@@ -124,12 +127,14 @@
 <div id="hud">
   <div class="panel" id="reto">
     <button id="btnAudio" title="Escuchar la operación">🔊</button>
-    <div class="txt"><span class="lbl2">Come la fruta con el resultado</span><span id="operacion">— × — = ?</span></div>
+    <div class="txt"><span class="lbl2" id="retoLbl">Atrapa el pez con el resultado</span><span id="operacion">— × — = ?</span></div>
   </div>
   <div class="panel"><span class="lbl">Progreso</span><span class="val" id="progreso">0/10</span></div>
   <div class="panel"><span class="lbl">⏱️ Tiempo</span><span class="val" id="tiempo">00:00</span></div>
+  <div class="panel hidden" id="panelVidas"><span class="lbl">❤️ Vidas</span><span class="val" id="vidas">❤️❤️❤️</span></div>
   <div class="panel" id="panelVoz" title="Activar/desactivar la voz"><span class="lbl">🔊 Voz</span><span class="val" id="vozEstado">ON</span></div>
   <div class="panel"><span class="lbl">🏆 Récord</span><span class="val" id="record">—</span></div>
+  <div class="panel hidden" id="btnMenuJuego" title="Volver al menú principal"><span class="lbl">Salir</span><span class="val">🏠 Menú</span></div>
 </div>
 
 <div id="wrap">
@@ -141,13 +146,13 @@
     <h2>Elige la tabla de multiplicar</h2>
     <div class="escenarios">
       <span class="escLbl">Escenario:</span>
-      <button class="escbtn sel" data-esc="paisaje">🏞️ Paisaje</button>
+      <button class="escbtn sel" data-esc="oceano">🌊 Océano</button>
       <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
     </div>
     <div id="gridTablas"></div>
     <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
-    <div class="mini">Mueve la 🐢 con el <b>mouse</b> (o el dedo) hacia adelante o hacia arriba y cómete la fruta con el resultado. Con la voz <b>activada</b> escuchas la operación; <b>desactivada</b>, la lee el niño.</div>
+    <div class="mini">Mueve la 🐢 con el <b>mouse</b> (o el dedo). En el <b>Océano</b> atrapa el pez con el resultado y esquiva los erizos 🦔; en el <b>Laberinto</b> recorre los pasillos. Con la voz <b>activada</b> escuchas la operación; <b>desactivada</b>, la lee el niño.</div>
     <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
   </div>
 
@@ -209,10 +214,15 @@
   let mouse={x:100,y:250,active:false};
   let aimX=0, aimY=0;        // punto guía (correa) que se dibuja junto a la tortuga
   let nubes=[], last=0;
-  let escenario="paisaje";   // paisaje | laberinto
+  let escenario="oceano";    // oceano | laberinto
   let paredes=[];            // laberinto: paredes en fracciones {x,y,w,h}
   let mazeMeta=null;
-  let frR=30;                // radio de fruta actual
+  let frR=30;                // radio de pez/fruta actual
+  // Océano
+  const VIDAS_INI=3;
+  let vidas=VIDAS_INI, invuln=0;
+  let erizos=[], algas=[], decoys=[], burbujas=[];
+  const FISH_COL=["#ff8f4d","#ffd23f","#4dd0e1","#ff7bac","#7b9dff","#69db7c","#e879f9"];
 
   // ---------- Número a texto (0-199) ----------
   const U=["cero","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince",
@@ -239,6 +249,8 @@
   function sMal(){ beep(200,0.18,"sawtooth",0.25); setTimeout(()=>beep(150,0.22,"sawtooth",0.22),120); }
   function sWaka(){ beep(520,0.05,"square",0.12); }
   function sWin(){ [523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,0.16,"square",0.25),i*130)); }
+  function sGolpe(){ beep(150,0.16,"sawtooth",0.3); setTimeout(()=>beep(110,0.2,"sawtooth",0.25),90); }
+  function sLose(){ [420,330,250,180].forEach((f,i)=>setTimeout(()=>beep(f,0.2,"sawtooth",0.22),i*150)); }
 
   // ---------- Voz ----------
   let vozES=null, vozLang="es-MX";
@@ -308,16 +320,21 @@
 
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-  // ---------- Generar nivel ----------
-  function generarNivel(N){
-    frutas=[];
+  // ---------- Generar océano ----------
+  function burbujasInit(){ burbujas=[]; for(let i=0;i<26;i++) burbujas.push({ x:Math.random(), y:Math.random(), s:0.4+Math.random()*0.9, v:0.05+Math.random()*0.09 }); }
+  function generarOceano(N){
+    frutas=[]; decoys=[]; erizos=[]; algas=[]; burbujasInit();
     const prod=[]; for(let m=1;m<=PRODS;m++) prod.push(N*m); shuffle(prod);
     for(let i=0;i<PRODS;i++){
-      const fx=0.09+0.82*(i/(PRODS-1));
-      const cat=["g","m","h","g","m"][Math.floor(Math.random()*5)];
-      let fy; if(cat==="g") fy=0.71; else if(cat==="m") fy=0.50; else fy=0.30;
-      frutas.push({ valor:prod[i], fx, fy, cat, tipo:i%FRUTA_COL.length, comida:false, pop:0, bob:Math.random()*6.28 });
+      frutas.push({ valor:prod[i], fx:0.05+0.9*(i/(PRODS-1)), fy:0.14+Math.random()*0.58,
+        tipo:i%FISH_COL.length, comida:false, pop:0, bob:Math.random()*6.28, sp:(Math.random()<0.5?-1:1)*0.00035, ang:0 });
     }
+    for(let i=0;i<8;i++) decoys.push({ valor:0, fx:Math.random()*0.94+0.03, fy:0.12+Math.random()*0.64,
+      tipo:i%FISH_COL.length, bob:Math.random()*6.28, sp:(Math.random()<0.5?-1:1)*0.0004, ang:0 });
+    for(let i=0;i<7;i++) erizos.push({ fx:0.08+Math.random()*0.88, fy:0.80+Math.random()*0.12 });
+    for(let i=0;i<12;i++) algas.push({ fx:Math.random(), h:0.10+Math.random()*0.14, ph:Math.random()*6.28, col:(Math.random()<0.5?"#2e9e4f":"#39c96f") });
+    turtle.r=Math.max(20,H*0.075); frR=H*0.058;
+    turtle.x=W*0.15; turtle.y=H*0.5; turtle.ang=0; camX=0;
   }
 
   // ---------- Laberinto (setos) ----------
@@ -406,28 +423,32 @@
       chip.addEventListener('click',()=>iniciar(N)); cont.appendChild(chip);
     }
   }
-  function irAMenu(){ estado="menu"; document.getElementById('ovFin').classList.add('hidden'); renderTablas(); document.getElementById('ovMenu').classList.remove('hidden'); }
+  function irAMenu(){ estado="menu"; document.getElementById('ovFin').classList.add('hidden');
+    document.getElementById('panelVidas').classList.add('hidden'); document.getElementById('btnMenuJuego').classList.add('hidden');
+    renderTablas(); document.getElementById('ovMenu').classList.remove('hidden'); }
 
   // ---------- Iniciar ----------
   function iniciar(N){
     tabla=N; initAudio(); resize();
-    if(escenario==="laberinto"){
-      generarLaberinto(N);
-    } else {
-      worldW=W*WORLDMULT; nubesInit(); generarNivel(N);
-      turtle.r=Math.max(22,H*0.085); frR=H*0.062;
-      turtle.x=W*0.15; turtle.y=H*0.6; camX=0;
-    }
+    if(escenario==="laberinto"){ generarLaberinto(N); }
+    else { worldW=W*WORLDMULT; generarOceano(N); }
     turtle.face=1;
-    comidos=0; currentM=1; penal=0; coolMal=0;
+    comidos=0; currentM=1; penal=0; coolMal=0; vidas=VIDAS_INI; invuln=0;
     mouse.x=turtle.x-camX; mouse.y=turtle.y; mouse.active=false;
     tInicio=performance.now(); tActual=0;
+    document.getElementById('retoLbl').textContent = (escenario==="laberinto")?"Come el número con el resultado":"Atrapa el pez con el resultado";
+    document.getElementById('panelVidas').classList.toggle('hidden', escenario!=="oceano");
+    document.getElementById('btnMenuJuego').classList.remove('hidden');
     pintarRecHUD();
     document.getElementById('ovMenu').classList.add('hidden');
     document.getElementById('ovFin').classList.add('hidden');
     estado="jugando"; nuevaOperacion(); actualizarHUD();
   }
-  function actualizarHUD(){ document.getElementById('progreso').textContent=comidos+"/"+PRODS; document.getElementById('tiempo').textContent=fmt(tActual); }
+  function actualizarHUD(){
+    document.getElementById('progreso').textContent=comidos+"/"+PRODS;
+    document.getElementById('tiempo').textContent=fmt(tActual);
+    if(escenario==="oceano") document.getElementById('vidas').textContent="❤️".repeat(Math.max(0,vidas))+"🤍".repeat(Math.max(0,VIDAS_INI-vidas));
+  }
 
   function completarTabla(){
     estado="fin";
@@ -437,8 +458,18 @@
     msg += nuevo ? "<br><span style='color:#3ddc84'>🏆 ¡NUEVO RÉCORD!</span>" : "<br>Récord: <b>"+fmt(rec)+"</b>";
     document.getElementById('finTexto').innerHTML=msg;
     document.getElementById('btnSiguiente').style.display = (tabla<TABLAS_MAX)?"":"none";
+    document.getElementById('btnMenuJuego').classList.add('hidden');
     document.getElementById('ovFin').classList.remove('hidden');
     sWin(); decir("¡Muy bien! Completaste la tabla del "+numeroATexto(tabla));
+  }
+  function perder(){
+    estado="fin";
+    document.getElementById('finTitulo').textContent="🦔 ¡Uy! Te quedaste sin vidas";
+    document.getElementById('finTexto').innerHTML="Tocaste demasiados erizos.<br>Atrapaste <b>"+comidos+"</b> de "+PRODS+" peces.<br>¡Inténtalo otra vez!";
+    document.getElementById('btnSiguiente').style.display="none";
+    document.getElementById('btnMenuJuego').classList.add('hidden');
+    document.getElementById('ovFin').classList.remove('hidden');
+    sLose(); decir("¡No te rindas! Inténtalo otra vez.");
   }
 
   // ---------- Entrada ----------
@@ -453,11 +484,32 @@
 
   // ---------- Update ----------
   function update(dt){
-    for(const c of nubes){ c.x+=c.v*(dt/1000); if(c.x>1.15) c.x=-0.15; }
+    for(const b of burbujas){ b.y-=b.v*(dt/1000); if(b.y<-0.05){ b.y=1.05; b.x=Math.random(); } }
     if(estado!=="jugando"){ turtle.anim+=dt*0.004; return; }
     tActual=performance.now()-tInicio+penal;
-    if(escenario==="laberinto") moverLaberinto(dt); else moverPaisaje(dt);
+    if(escenario==="laberinto") moverLaberinto(dt); else moverOceano(dt);
     if(coolMal>0) coolMal-=dt;
+    if(invuln>0) invuln-=dt;
+
+    if(escenario==="oceano"){
+      // peces nadan (deriva horizontal)
+      for(const f of frutas){ if(!f.comida){ f.fx+=f.sp*(dt/16.67); if(f.fx<0.02){f.fx=0.02;f.sp=Math.abs(f.sp);} if(f.fx>0.98){f.fx=0.98;f.sp=-Math.abs(f.sp);} } }
+      for(const d of decoys){ d.fx+=d.sp*(dt/16.67); if(d.fx<0.02){d.fx=0.02;d.sp=Math.abs(d.sp);} if(d.fx>0.98){d.fx=0.98;d.sp=-Math.abs(d.sp);} d.bob+=dt*0.004; }
+      // erizos: quitan una vida y detienen a la tortuga
+      if(invuln<=0){
+        for(const e of erizos){
+          const ex=e.fx*worldW, ey=e.fy*H;
+          if(Math.hypot(ex-turtle.x,ey-turtle.y) < turtle.r*0.8 + H*0.045){
+            vidas--; invuln=1300; sGolpe(); flash("¡Erizo! 🦔 −1 vida","mal");
+            const a=Math.atan2(turtle.y-ey,turtle.x-ex); turtle.x+=Math.cos(a)*turtle.r*1.6; turtle.y+=Math.sin(a)*turtle.r*1.6;
+            mouse.active=false;   // se detiene
+            actualizarHUD();
+            if(vidas<=0){ perder(); return; }
+            break;
+          }
+        }
+      }
+    }
 
     const fr=frR;
     for(const f of frutas){
@@ -471,27 +523,28 @@
           if(comidos>=PRODS){ completarTabla(); return; }
           currentM++; nuevaOperacion();
         }
-        // La fruta incorrecta se ignora en ambos escenarios: sin mensaje ni penalización.
+        // Pez incorrecto o sin número: no pasa nada, no se muestra nada.
       }
     }
     actualizarHUD();
   }
 
-  function moverPaisaje(dt){
+  function moverOceano(dt){
     camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
     const tx=mouse.active?(camX+mouse.x):turtle.x, ty=mouse.active?mouse.y:turtle.y;
     let dx=tx-turtle.x, dy=ty-turtle.y;
     const L=turtle.r*2.4, d=Math.hypot(dx,dy)||1;          // correa: el guía no se aleja de la tortuga
     if(d>L){ dx=dx/d*L; dy=dy/d*L; }
     aimX=turtle.x+dx; aimY=turtle.y+dy;
-    const maxV=W*0.0095, ease=0.18;
+    const maxV=W*0.0088, ease=0.16;
     let mvx=dx*ease, mvy=dy*ease; const mv=Math.hypot(mvx,mvy);
     if(mv>maxV){ mvx=mvx/mv*maxV; mvy=mvy/mv*maxV; }
     turtle.x+=mvx*(dt/16.67); turtle.y+=mvy*(dt/16.67);
     turtle.x=Math.max(turtle.r,Math.min(worldW-turtle.r,turtle.x));
-    turtle.y=Math.max(H*0.12,Math.min(H*groundFrac-turtle.r*0.25,turtle.y));
-    if(Math.abs(mvx)>0.4) turtle.face=mvx>0?1:-1;
-    turtle.anim += (mv>0.5?dt*0.02:dt*0.005);
+    turtle.y=Math.max(H*0.06,Math.min(H*0.94-turtle.r*0.2,turtle.y));
+    // orientar la tortuga (vista de espalda) hacia donde nada
+    if(Math.hypot(dx,dy)>1.2){ const ta=Math.atan2(dy,dx); let da=ta-turtle.ang; while(da>Math.PI)da-=6.283185; while(da<-Math.PI)da+=6.283185; turtle.ang+=da*0.18; }
+    turtle.anim += (mv>0.5?dt*0.02:dt*0.006);
     camX=Math.max(0,Math.min(worldW-W,turtle.x-W/2));
   }
   function moverLaberinto(dt){
@@ -518,32 +571,82 @@
   // ---------- Dibujo ----------
   function roundRect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
 
-  function drawFondo(){
-    // cielo
-    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#7ec8ff"); g.addColorStop(1,"#cdeeff");
+  function drawOceano(){
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#27a6c9"); g.addColorStop(0.55,"#127299"); g.addColorStop(1,"#0a3f66");
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    // sol (parallax muy leve)
-    ctx.fillStyle="rgba(255,236,140,.9)"; ctx.beginPath(); ctx.arc(W*0.84-camX*0.04,H*0.16,H*0.08,0,6.28); ctx.fill();
-    // colinas repetidas con parallax
-    const par=0.45, sp=W*0.55, base=-((camX*par)%sp);
-    ctx.fillStyle="#7bd06a";
-    for(let hx=base-sp; hx<W+sp; hx+=sp){ ctx.beginPath(); ctx.ellipse(hx+sp*0.5,H*0.86,W*0.30,H*0.22,0,Math.PI,0); ctx.fill(); }
-    ctx.fillStyle="#8fdd7a";
-    for(let hx=base-sp; hx<W+sp; hx+=sp){ ctx.beginPath(); ctx.ellipse(hx,H*0.88,W*0.34,H*0.26,0,Math.PI,0); ctx.fill(); }
-    // nubes
-    ctx.fillStyle="rgba(255,255,255,.92)";
-    for(const c of nubes){ const cx=c.x*W, cy=c.y*H, s=H*0.05*c.s;
-      ctx.beginPath(); ctx.arc(cx,cy,s,0,6.28); ctx.arc(cx+s,cy+s*0.2,s*0.85,0,6.28); ctx.arc(cx-s,cy+s*0.2,s*0.8,0,6.28); ctx.arc(cx+s*0.4,cy-s*0.5,s*0.7,0,6.28); ctx.fill(); }
-    // suelo
-    const gy=H*groundFrac;
-    ctx.fillStyle="#6b4a2b"; ctx.fillRect(0,gy,W,H-gy);
-    ctx.fillStyle="#4caf50"; ctx.fillRect(0,gy,W,H*0.045);
-    // pasto que se desplaza con el mundo (sensación de avance)
-    ctx.fillStyle="#3d9142"; const tw=H*0.05, off=camX%tw;
-    for(let x=-off-tw;x<W+tw;x+=tw){ ctx.beginPath(); ctx.moveTo(x,gy); ctx.lineTo(x+tw*0.5,gy-H*0.02); ctx.lineTo(x+tw,gy); ctx.fill(); }
-    // marcas de tierra desplazándose
-    ctx.fillStyle="rgba(0,0,0,.10)"; const dw=H*0.16, doff=camX%dw;
-    for(let x=-doff-dw;x<W+dw;x+=dw){ ctx.beginPath(); ctx.arc(x, gy+(H-gy)*0.55, H*0.018, 0, 6.28); ctx.fill(); }
+    // rayos de luz
+    ctx.save(); ctx.globalAlpha=0.10; ctx.fillStyle="#f0ffff";
+    const rs=W*0.5, roff=(camX*0.15)%rs;
+    for(let x=-roff-rs; x<W+rs; x+=rs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+W*0.1,0); ctx.lineTo(x-W*0.08,H*0.9); ctx.lineTo(x-W*0.18,H*0.9); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    // burbujas
+    ctx.fillStyle="rgba(255,255,255,.28)";
+    for(const b of burbujas){ const s=H*0.012*b.s; ctx.beginPath(); ctx.arc(b.x*W,b.y*H,s,0,6.28); ctx.fill(); }
+    // fondo de arena
+    const gy=H*0.9;
+    ctx.fillStyle="#e6d396"; ctx.fillRect(0,gy,W,H-gy);
+    ctx.fillStyle="#d3bd78"; const dw=H*0.11, off=camX%dw;
+    for(let x=-off-dw;x<W+dw;x+=dw){ ctx.beginPath(); ctx.arc(x,gy+H*0.035,H*0.028,Math.PI,0); ctx.fill(); }
+  }
+  function drawAlga(a){
+    const x=a.fx*worldW-camX; if(x<-W*0.1||x>W*1.1) return;
+    const baseY=H*0.9, h=a.h*H, sway=Math.sin(performance.now()*0.001+a.ph)*h*0.16;
+    ctx.save(); ctx.strokeStyle=a.col; ctx.lineWidth=Math.max(3,H*0.013); ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(x,baseY); ctx.quadraticCurveTo(x+sway,baseY-h*0.5,x+sway*0.5,baseY-h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+H*0.02,baseY); ctx.quadraticCurveTo(x+H*0.02-sway,baseY-h*0.4,x+H*0.02-sway*0.5,baseY-h*0.8); ctx.stroke();
+    ctx.restore();
+  }
+  function drawErizo(e){
+    const x=e.fx*worldW-camX, y=e.fy*H, r=H*0.045; if(x<-W*0.2||x>W*1.2) return;
+    ctx.save(); ctx.translate(x,y);
+    ctx.strokeStyle="#2c1f47"; ctx.lineWidth=Math.max(2,r*0.14);
+    for(let i=0;i<12;i++){ const a=i/12*6.283185; ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*0.6,Math.sin(a)*r*0.6); ctx.lineTo(Math.cos(a)*r*1.25,Math.sin(a)*r*1.25); ctx.stroke(); }
+    ctx.fillStyle="#5b3fa0"; ctx.beginPath(); ctx.arc(0,0,r*0.72,0,6.28); ctx.fill();
+    ctx.fillStyle="#8367d6"; ctx.beginPath(); ctx.arc(-r*0.2,-r*0.2,r*0.24,0,6.28); ctx.fill();
+    ctx.restore();
+  }
+  function drawPez(f){
+    const r=frR, x=f.fx*worldW-camX, y=f.fy*H;
+    if(x<-W*0.2||x>W*1.2) return;
+    if(f.comida && f.pop<=0) return;
+    const yy=y+Math.sin(f.bob)*r*0.14, dir=(f.sp<0)?-1:1;
+    ctx.save(); ctx.translate(x,yy); ctx.scale(dir,1);
+    if(f.comida){ ctx.globalAlpha=Math.max(0,f.pop/260); const sc=1+(1-f.pop/260)*0.6; ctx.scale(sc,sc); }
+    const col=f.valor? FISH_COL[f.tipo] : "#9fb8c9";
+    const tf=Math.sin(f.bob*3)*0.22;
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(-r*0.72,0); ctx.lineTo(-r*1.12,-r*0.5+tf*r); ctx.lineTo(-r*1.12,r*0.5+tf*r); ctx.closePath(); ctx.fill(); // cola
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.95,r*0.62,0,0,6.28); ctx.fill();                                                          // cuerpo
+    ctx.beginPath(); ctx.moveTo(-r*0.05,-r*0.55); ctx.lineTo(r*0.28,-r*0.92); ctx.lineTo(r*0.42,-r*0.52); ctx.closePath(); ctx.fill(); // aleta
+    ctx.fillStyle="rgba(255,255,255,.26)"; ctx.beginPath(); ctx.ellipse(r*0.12,-r*0.18,r*0.42,r*0.2,-0.2,0,6.28); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(r*0.6,-r*0.08,r*0.13,0,6.28); ctx.fill();
+    ctx.fillStyle="#12233a"; ctx.beginPath(); ctx.arc(r*0.64,-r*0.08,r*0.07,0,6.28); ctx.fill();
+    ctx.restore();
+    if(f.valor){   // número en el lomo (sin voltear para que se lea)
+      const txt=String(f.valor);
+      ctx.save(); ctx.translate(x,yy);
+      ctx.font="bold "+(txt.length>=3?r*0.6:txt.length>=2?r*0.78:r*0.95)+"px 'Trebuchet MS',sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.lineWidth=Math.max(3,r*0.14); ctx.strokeStyle="rgba(0,0,0,.6)"; ctx.strokeText(txt,0,0);
+      ctx.fillStyle="#fff"; ctx.fillText(txt,0,0); ctx.restore();
+    }
+  }
+  function drawTortugaOceano(){
+    const r=turtle.r; ctx.save(); ctx.translate(turtle.x-camX,turtle.y); ctx.rotate(turtle.ang);
+    if(invuln>0 && Math.floor(invuln/120)%2===0) ctx.globalAlpha=0.45;
+    const flap=Math.sin(turtle.anim*2);
+    ctx.fillStyle="#2e8f57";
+    [[0.45,0.62,0.6],[0.45,-0.62,-0.6],[-0.5,0.6,0.9],[-0.5,-0.6,-0.9]].forEach(p=>{ ctx.save(); ctx.translate(p[0]*r,p[1]*r); ctx.rotate(p[2]+flap*0.25*(p[1]>0?1:-1)); ctx.beginPath(); ctx.ellipse(0,0,r*0.34,r*0.16,0,0,6.28); ctx.fill(); ctx.restore(); });
+    ctx.beginPath(); ctx.moveTo(-r*0.85,0); ctx.lineTo(-r*1.08,-r*0.12); ctx.lineTo(-r*1.08,r*0.12); ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#37a862"; ctx.beginPath(); ctx.ellipse(r*0.92,0,r*0.3,r*0.25,0,0,6.28); ctx.fill();
+    ctx.fillStyle="#0f1f33"; ctx.beginPath(); ctx.arc(r*1.02,-r*0.11,r*0.05,0,6.28); ctx.fill(); ctx.beginPath(); ctx.arc(r*1.02,r*0.11,r*0.05,0,6.28); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.92,r*0.82,0,0,6.28); ctx.fillStyle="#2f8f57"; ctx.fill();
+    ctx.strokeStyle="#1f6b3d"; ctx.lineWidth=Math.max(2,r*0.08); ctx.stroke();
+    ctx.fillStyle="#3fae6a";
+    ctx.beginPath(); for(let i=0;i<6;i++){ const a=i/6*6.283185+0.5; const px=Math.cos(a)*r*0.32, py=Math.sin(a)*r*0.3; i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="#1f6b3d"; ctx.lineWidth=Math.max(1.5,r*0.045);
+    ctx.beginPath(); for(let i=0;i<6;i++){ const a=i/6*6.283185+0.5; const px=Math.cos(a)*r*0.32, py=Math.sin(a)*r*0.3; i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.closePath(); ctx.stroke();
+    for(let i=0;i<6;i++){ const a=i/6*6.283185+0.5; ctx.beginPath(); ctx.moveTo(Math.cos(a)*r*0.32,Math.sin(a)*r*0.3); ctx.lineTo(Math.cos(a)*r*0.92,Math.sin(a)*r*0.82); ctx.stroke(); }
+    ctx.restore();
   }
 
   function drawBloque(cx,cy,half){
@@ -655,15 +758,23 @@
     }
   }
   function draw(){
-    if(escenario==="laberinto") drawLaberinto(); else drawFondo();
-    for(const f of frutas) drawFruta(f);
-    drawCursor();
-    if(estado==="jugando"||estado==="fin"){
-      if(escenario==="laberinto"){
+    if(escenario==="laberinto"){
+      drawLaberinto();
+      for(const f of frutas) drawFruta(f);
+      drawCursor();
+      if(estado==="jugando"||estado==="fin"){
         if(turtle.dir4==='U') drawTortugaTop(-Math.PI/2);        // sube → caparazón desde arriba, cabeza arriba
         else if(turtle.dir4==='D') drawTortugaTop(Math.PI/2);    // baja → caparazón desde arriba, cabeza abajo
         else { turtle.face=(turtle.dir4==='L')?-1:1; drawTortuga(); }  // izq/der → vista lateral
-      } else drawTortuga();
+      }
+    } else {                       // Océano
+      drawOceano();
+      for(const a of algas) drawAlga(a);
+      for(const e of erizos) drawErizo(e);
+      for(const d of decoys) drawPez(d);   // peces señuelo (sin número)
+      for(const f of frutas) drawPez(f);    // peces con número
+      drawCursor();
+      if(estado==="jugando"||estado==="fin") drawTortugaOceano();
     }
   }
   function loop(ts){ const dt=Math.min(50,ts-last||16.67); last=ts; update(dt); draw(); requestAnimationFrame(loop); }
@@ -675,6 +786,7 @@
   document.getElementById('btnSiguiente').addEventListener('click',()=>{ iniciar(Math.min(TABLAS_MAX,tabla+1)); });
   document.getElementById('btnRepetir').addEventListener('click',()=>{ iniciar(tabla); });
   document.getElementById('btnMenu').addEventListener('click',irAMenu);
+  document.getElementById('btnMenuJuego').addEventListener('click',irAMenu);
   document.querySelectorAll('.escbtn').forEach(b=>b.addEventListener('click',()=>{
     escenario=b.dataset.esc;
     document.querySelectorAll('.escbtn').forEach(x=>x.classList.toggle('sel',x===b));
@@ -682,7 +794,7 @@
   }));
 
   // ---------- Arranque ----------
-  resize(); nubesInit(); renderTablas(); pintarVoz();
+  resize(); burbujasInit(); renderTablas(); pintarVoz();
   turtle.x=W*0.5; turtle.y=H*0.6;
   requestAnimationFrame(loop);
 })();
