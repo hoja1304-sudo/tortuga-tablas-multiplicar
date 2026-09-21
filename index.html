@@ -397,6 +397,7 @@
         stack.push([cx,cy]); cx=nx; cy=ny; cells[id(cx,cy)].v=true; vis++;
       } else if(stack.length){ const p=stack.pop(); cx=p[0]; cy=p[1]; } else break;
     }
+    mazeMeta.cells=cells;   // conectividad de celdas (para mover las manzanas por los pasillos)
     // paredes en fracciones (x,w de W · y,h de H)
     const X0=margin, Y0=margin;
     const add=(x,y,w,h)=>paredes.push({x:x/W,y:y/H,w:w/W,h:h/H});
@@ -415,10 +416,35 @@
     for(let i=0;i<PRODS;i++){
       const ci=celdas[i], ccx=ci%gc, ccy=Math.floor(ci/gc);
       const px=X0+(ccx+0.5)*cw, py=Y0+(ccy+0.5)*ch;
-      frutas.push({ valor:prod[i], fx:px/W, fy:py/H, cat:"g", tipo:i%FRUTA_COL.length, comida:false, pop:0, bob:Math.random()*6.28 });
+      frutas.push({ valor:prod[i], fx:px/W, fy:py/H, cat:"g", tipo:i%FRUTA_COL.length, comida:false, pop:0, bob:Math.random()*6.28,
+        cx:ccx, cy:ccy, tcx:ccx, tcy:ccy, pcx:-1, pcy:-1 });
     }
     turtle.x=X0+0.5*cw; turtle.y=Y0+0.5*ch;
     worldW=W; camX=0;
+  }
+  // Las manzanas se desplazan de celda a celda por los pasillos abiertos del laberinto
+  function moverFrutasLaberinto(dt){
+    const m=mazeMeta; if(!m||!m.cells) return;
+    const step=Math.min(W,H)*0.0028*(dt/16.67);
+    for(const f of frutas){
+      if(f.comida) continue;
+      const cpx=m.margin+(f.tcx+0.5)*m.cw, cpy=m.margin+(f.tcy+0.5)*m.ch;
+      const px=f.fx*W, py=f.fy*H;
+      let dx=cpx-px, dy=cpy-py, d=Math.hypot(dx,dy)||0.0001;
+      if(d<=step){
+        f.fx=cpx/W; f.fy=cpy/H; f.cx=f.tcx; f.cy=f.tcy;
+        const c=m.cells[f.cy*m.gc+f.cx], nb=[];
+        if(!c.t && f.cy>0) nb.push([f.cx,f.cy-1]);
+        if(!c.r && f.cx<m.gc-1) nb.push([f.cx+1,f.cy]);
+        if(!c.b && f.cy<m.gr-1) nb.push([f.cx,f.cy+1]);
+        if(!c.l && f.cx>0) nb.push([f.cx-1,f.cy]);
+        let opts=nb.filter(n=>!(n[0]===f.pcx&&n[1]===f.pcy));
+        if(!opts.length) opts=nb;
+        if(opts.length){ const p=opts[Math.floor(Math.random()*opts.length)]; f.pcx=f.cx; f.pcy=f.cy; f.tcx=p[0]; f.tcy=p[1]; }
+      } else {
+        f.fx += (dx/d*step)/W; f.fy += (dy/d*step)/H;
+      }
+    }
   }
   function chocaPared(px,py,r){
     for(const w of paredes){
@@ -521,6 +547,7 @@
     if(escenario==="laberinto") moverLaberinto(dt); else moverOceano(dt);
     if(coolMal>0) coolMal-=dt;
     if(invuln>0) invuln-=dt;
+    if(escenario==="laberinto") moverFrutasLaberinto(dt);
 
     if(escenario==="oceano"){
       // peces nadan (deriva horizontal)
