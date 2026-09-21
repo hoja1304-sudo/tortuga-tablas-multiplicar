@@ -937,12 +937,14 @@
       return {texto:`Observa las figuras anteriores. Si el patrón continúa, ¿en cuántos cuadrados se dividirá la <b>figura ${n}</b>?`,correcta:t,unidad:"cuadrados",figura:figuraPatron(),
         pasos:[`Figura 1: <b>1 × 1 = 1</b>`,`Figura 2: <b>2 × 2 = 4</b>`,`Figura 3: <b>3 × 3 = 9</b>`,`El patrón es <b>n × n</b>.`,`Figura ${n}: <b>${n} × ${n} = ${t}</b>.`,`Respuesta: se divide en <b>${t} cuadrados</b>.`]};}},
     {rank:3, make:()=>{ const cajas=r(3,6),porCaja=r(4,8),t=cajas*porCaja*2;
-      return {texto:`Una tienda recibe <b>${cajas} cajas</b> y cada caja trae <b>${porCaja} pares</b> de medias. ¿Cuántas medias (unidades) recibió en total?`,correcta:t,unidad:"medias",
+      return {texto:`Una tienda recibe <b>${cajas} cajas</b> y cada caja trae <b>${porCaja} pares</b> de medias. ¿Cuántas medias (unidades) recibió en total?`,correcta:t,unidad:"medias", dist:[cajas*porCaja],
         pasos:[`Pares en total: <b>${cajas} × ${porCaja} = ${cajas*porCaja}</b>.`,`Cada par son <b>2</b> medias.`,`Multiplicamos: <b>${cajas*porCaja} × 2 = ${t}</b>.`,`Respuesta: <b>${t} medias</b>.`]};}}
   ];
 
-  function generarOpciones(correcta){
-    const set=new Set([correcta]); const base=Math.max(1,Math.round(correcta*0.12)); let g=0;
+  function generarOpciones(correcta, dist){
+    const set=new Set([correcta]);
+    if(dist) dist.forEach(d=>{ if(set.size<3 && d>0 && d!==correcta) set.add(d); });
+    const base=Math.max(1,Math.round(correcta*0.12)); let g=0;
     while(set.size<3 && g++<50){ const d=r(1,3)*(Math.random()<0.5?-1:1)*base; const v=correcta+d; if(v>0 && v!==correcta && !set.has(v)) set.add(v); }
     while(set.size<3){ set.add(correcta+set.size); }
     return shuffle([...set]);
@@ -953,7 +955,7 @@
     // 25% del tiempo cualquier tipo (para que aparezcan cuadrados y edades); resto según nivel
     const pool=(Math.random()<0.25)?PLANTILLAS:PLANTILLAS.filter(p=>p.rank<=nivel);
     const p=pool[r(0,pool.length-1)]; const prob=p.make();
-    prob.opciones=generarOpciones(prob.correcta); actual=prob; respondido=false;
+    prob.opciones=generarOpciones(prob.correcta, prob.dist); actual=prob; respondido=false;
     $('pfigura').innerHTML=prob.figura||"";
     $('penunciado').innerHTML=prob.texto;
     const cont=$('popciones'); cont.innerHTML=""; const letras=["a","b","c"];
