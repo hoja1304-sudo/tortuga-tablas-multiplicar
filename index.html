@@ -18,6 +18,7 @@
   .panel{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);border-radius:14px;padding:6px 12px;
          display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px;backdrop-filter:blur(3px);}
   .panel.hidden{display:none;}
+  .hidden{display:none!important;}
   .panel .lbl{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:1px;}
   .panel .val{font-size:20px;font-weight:bold;line-height:1.1;}
   #reto{background:linear-gradient(180deg,#1d7a3f,#0f5228);border:3px solid var(--amarillo);box-shadow:0 0 20px rgba(255,212,0,.35);min-width:210px;flex-direction:row;gap:12px;}
@@ -56,6 +57,8 @@
   .escbtn:hover{transform:translateY(-2px);}
   .escbtn.sel{border-color:var(--amarillo);background:rgba(255,212,0,.18);color:var(--amarillo);}
   .tituloTabla{font-size:clamp(15px,3.6vw,22px)!important;line-height:1.3;max-width:640px;}
+  #menuEscenario,#menuTablas{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;}
+  .escSub{font-size:16px;font-weight:bold;color:var(--amarillo);opacity:.95;}
   #ovInstrucciones{z-index:30;}
   .instr{text-align:left;max-width:600px;font-size:clamp(14px,3.4vw,17px);line-height:1.5;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px 16px;}
   .instr p{margin:0 0 10px;} .instr p:last-child{margin-bottom:0;} .instr b{color:var(--amarillo);}
@@ -145,19 +148,27 @@
   <canvas id="tablero"></canvas>
   <div id="flash"></div>
 
-  <!-- Menú: elegir tabla -->
+  <!-- Menú -->
   <div class="overlay" id="ovMenu">
-    <button class="probbtn" id="btnInstrucciones">📖 Instrucciones</button>
-    <div class="escenarios">
-      <span class="escLbl">Escenario:</span>
-      <button class="escbtn sel" data-esc="oceano">🌊 Océano</button>
-      <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
+    <!-- Paso 1: elegir escenario -->
+    <div id="menuEscenario">
+      <button class="probbtn" id="btnInstrucciones">📖 Instrucciones</button>
+      <h2 class="tituloTabla">Elige un escenario para practicar las tablas de multiplicar</h2>
+      <div class="escenarios">
+        <button class="escbtn" data-esc="oceano">🌊 Océano</button>
+        <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
+      </div>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
+      <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
+      <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
     </div>
-    <h2 class="tituloTabla">Elige la tabla de multiplicar con la cual deseas iniciar el juego que seleccionaste</h2>
-    <div id="gridTablas"></div>
-    <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
-    <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
+    <!-- Paso 2: elegir tabla -->
+    <div id="menuTablas" class="hidden">
+      <div class="escSub" id="escSub">🌊 Océano</div>
+      <h2 class="tituloTabla">Elige la tabla de multiplicar con la cual deseas iniciar el juego que seleccionaste</h2>
+      <div id="gridTablas"></div>
+      <button class="btn gris" id="btnCambiarEsc">← Cambiar escenario</button>
+    </div>
   </div>
 
   <!-- Fin de tabla -->
@@ -192,7 +203,7 @@
   <h2>📝 Problemas · Tablas de multiplicar</h2>
   <div class="psub">Lee el problema y elige la respuesta correcta. La dificultad aumenta con tus aciertos (tablas del 1 al 10).</div>
   <div class="pcard">
-    <div class="pmeta"><span>Nivel <b id="pnivel">1</b></span><span>Aciertos: <b id="paciertos">0</b> / <b id="pintentos">0</b></span></div>
+    <div class="pmeta"><span>Aciertos: <b id="paciertos">0</b> / <b id="pintentos">0</b></span></div>
     <div id="pfigura"></div>
     <p id="penunciado">—</p>
     <div id="popciones"></div>
@@ -443,7 +454,9 @@
   }
   function irAMenu(){ estado="menu"; document.getElementById('ovFin').classList.add('hidden');
     document.getElementById('panelVidas').classList.add('hidden'); document.getElementById('btnMenuJuego').classList.add('hidden');
-    renderTablas(); document.getElementById('ovMenu').classList.remove('hidden'); }
+    document.getElementById('menuTablas').classList.add('hidden');
+    document.getElementById('menuEscenario').classList.remove('hidden');
+    document.getElementById('ovMenu').classList.remove('hidden'); }
 
   // ---------- Iniciar ----------
   function iniciar(N){
@@ -815,9 +828,15 @@
   document.getElementById('btnCerrarInstr').addEventListener('click',()=>document.getElementById('ovInstrucciones').classList.add('hidden'));
   document.querySelectorAll('.escbtn').forEach(b=>b.addEventListener('click',()=>{
     escenario=b.dataset.esc;
-    document.querySelectorAll('.escbtn').forEach(x=>x.classList.toggle('sel',x===b));
+    document.getElementById('escSub').textContent = (escenario==="oceano")?"🌊 Océano":"🧩 Laberinto";
     renderTablas();
+    document.getElementById('menuEscenario').classList.add('hidden');
+    document.getElementById('menuTablas').classList.remove('hidden');
   }));
+  document.getElementById('btnCambiarEsc').addEventListener('click',()=>{
+    document.getElementById('menuTablas').classList.add('hidden');
+    document.getElementById('menuEscenario').classList.remove('hidden');
+  });
 
   // ---------- Arranque ----------
   resize(); burbujasInit(); renderTablas(); pintarVoz();
@@ -903,7 +922,7 @@
   }
 
   function nuevoProblema(){
-    nivel=Math.min(3,1+Math.floor(aciertos/2)); $('pnivel').textContent=nivel;
+    nivel=Math.min(3,1+Math.floor(aciertos/2));   // dificultad interna (no se muestra)
     // 25% del tiempo cualquier tipo (para que aparezcan cuadrados y edades); resto según nivel
     const pool=(Math.random()<0.25)?PLANTILLAS:PLANTILLAS.filter(p=>p.rank<=nivel);
     const p=pool[r(0,pool.length-1)]; const prob=p.make();
