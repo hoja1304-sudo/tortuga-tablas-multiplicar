@@ -135,7 +135,7 @@
   </div>
   <div class="panel"><span class="lbl">Progreso</span><span class="val" id="progreso">0/10</span></div>
   <div class="panel"><span class="lbl">⏱️ Tiempo</span><span class="val" id="tiempo">00:00</span></div>
-  <div class="panel hidden" id="panelVidas"><span class="lbl">❤️ Vidas</span><span class="val" id="vidas">❤️❤️❤️</span></div>
+  <div class="panel hidden" id="panelVidas"><span class="lbl">❤️ Vidas</span><span class="val" id="vidas">❤️❤️❤️❤️❤️</span></div>
   <div class="panel" id="panelVoz" title="Activar/desactivar la voz"><span class="lbl">🔊 Voz</span><span class="val" id="vozEstado">ON</span></div>
   <div class="panel"><span class="lbl">🏆 Récord</span><span class="val" id="record">—</span></div>
   <div class="panel hidden" id="btnMenuJuego" title="Volver al menú principal"><span class="lbl">Salir</span><span class="val">🏠 Menú</span></div>
@@ -147,12 +147,12 @@
 
   <!-- Menú: elegir tabla -->
   <div class="overlay" id="ovMenu">
+    <button class="probbtn" id="btnInstrucciones">📖 Instrucciones</button>
     <div class="escenarios">
       <span class="escLbl">Escenario:</span>
       <button class="escbtn sel" data-esc="oceano">🌊 Océano</button>
       <button class="escbtn" data-esc="laberinto">🧩 Laberinto</button>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
-      <button class="probbtn" id="btnInstrucciones">📖 Instrucciones</button>
     </div>
     <h2 class="tituloTabla">Elige la tabla de multiplicar con la cual deseas iniciar el juego que seleccionaste</h2>
     <div id="gridTablas"></div>
@@ -237,7 +237,7 @@
   let mazeMeta=null;
   let frR=30;                // radio de pez/fruta actual
   // Océano
-  const VIDAS_INI=3;
+  const VIDAS_INI=5;
   let vidas=VIDAS_INI, invuln=0;
   let erizos=[], algas=[], decoys=[], burbujas=[];
   const FISH_COL=["#ff8f4d","#ffd23f","#4dd0e1","#ff7bac","#7b9dff","#69db7c","#e879f9"];
@@ -349,7 +349,8 @@
     }
     for(let i=0;i<8;i++) decoys.push({ valor:0, fx:Math.random()*0.94+0.03, fy:0.12+Math.random()*0.64,
       tipo:i%FISH_COL.length, bob:Math.random()*6.28, sp:(Math.random()<0.5?-1:1)*0.0004, ang:0 });
-    for(let i=0;i<7;i++) erizos.push({ fx:0.08+Math.random()*0.88, fy:0.80+Math.random()*0.12 });
+    for(let i=0;i<7;i++) erizos.push({ fx:0.08+Math.random()*0.88, fy:0.80+Math.random()*0.12,
+      vy:0.025+Math.random()*0.06, dx:(Math.random()<0.5?-1:1)*0.0006, esp:0.6+Math.random()*0.8 });
     for(let i=0;i<12;i++) algas.push({ fx:Math.random(), h:0.10+Math.random()*0.14, ph:Math.random()*6.28, col:(Math.random()<0.5?"#2e9e4f":"#39c96f") });
     turtle.r=Math.max(20,H*0.075); frR=H*0.058;
     turtle.x=W*0.15; turtle.y=H*0.5; turtle.ang=0; camX=0;
@@ -513,6 +514,12 @@
       // peces nadan (deriva horizontal)
       for(const f of frutas){ if(!f.comida){ f.fx+=f.sp*(dt/16.67); if(f.fx<0.02){f.fx=0.02;f.sp=Math.abs(f.sp);} if(f.fx>0.98){f.fx=0.98;f.sp=-Math.abs(f.sp);} } }
       for(const d of decoys){ d.fx+=d.sp*(dt/16.67); if(d.fx<0.02){d.fx=0.02;d.sp=Math.abs(d.sp);} if(d.fx>0.98){d.fx=0.98;d.sp=-Math.abs(d.sp);} d.bob+=dt*0.004; }
+      // erizos flotan hacia arriba (aleatorio); al salir por arriba reaparecen abajo
+      for(const e of erizos){
+        e.fy -= e.vy*(dt/1000); e.fx += e.dx*(dt/16.67);
+        if(e.fx<0.02){e.fx=0.02;e.dx=Math.abs(e.dx);} if(e.fx>0.98){e.fx=0.98;e.dx=-Math.abs(e.dx);}
+        if(e.fy < -0.06){ e.fy=0.9+Math.random()*0.08; e.fx=0.04+Math.random()*0.92; e.vy=0.025+Math.random()*0.06; e.dx=(Math.random()<0.5?-1:1)*0.0006; }
+      }
       // erizos: quitan una vida y detienen a la tortuga
       if(invuln<=0){
         for(const e of erizos){
