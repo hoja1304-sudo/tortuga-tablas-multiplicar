@@ -103,6 +103,13 @@
   #eFeedback .emoji{font-size:34px;display:block;line-height:1.1;}
   #efx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:0 16px 16px 16px;}
   #eAdd{font-size:clamp(20px,5vw,26px)!important;padding:14px 28px!important;}
+  .eresrow{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0 4px;font-size:clamp(16px,4vw,20px);font-weight:bold;color:#fff;}
+  .stepper{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.08);border:2px solid var(--amarillo);border-radius:12px;padding:3px 8px;}
+  .stepper .sbtn{background:var(--amarillo);color:#5a3d00;border:none;border-radius:8px;width:52px;height:30px;font-size:16px;font-weight:bold;cursor:pointer;margin:2px 0;}
+  .stepper .sbtn:active{transform:translateY(1px);}
+  #eResVal{font-size:clamp(26px,6vw,36px);font-weight:bold;color:#ffd400;min-width:52px;text-align:center;line-height:1.15;}
+  #estrategias .eacc2{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+  #eInstrAudio.off{opacity:.55;}
   #btnMenuJuego{cursor:pointer;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);transition:transform .1s,background .12s;}
   #btnMenuJuego:hover{background:rgba(255,255,255,.22);transform:translateY(-2px);}
   #btnMenuJuego:active{transform:translateY(1px);}
@@ -251,16 +258,26 @@
     </section>
     <section id="ePractica" class="hidden">
       <p id="ePregunta">—</p>
-      <p id="eInstr" style="text-align:center"></p>
+      <p id="eInstr" style="text-align:center">Escribe la multiplicación como una suma:</p>
       <div id="eSuma" class="esuma">—</div>
-      <div id="eTotalLine" class="etotal"></div>
+      <div class="eresrow">
+        <span>Resultado:</span>
+        <div class="stepper">
+          <button id="eResUp" class="sbtn" title="Subir">▲</button>
+          <div id="eResVal">0</div>
+          <button id="eResDown" class="sbtn" title="Bajar">▼</button>
+        </div>
+      </div>
       <div class="eacc">
         <button id="eAdd" class="btn verde">➕ <span id="eAddN">3</span></button>
         <button id="eQuitar" class="btn gris">↩️ Quitar</button>
         <button id="eComprobar" class="btn">✅ Comprobar</button>
       </div>
       <div id="eFeedback"></div>
-      <button id="eNuevo" class="btn gris" style="margin-top:8px;">🔄 Nuevo</button>
+      <div class="eacc2">
+        <button id="eInstrAudio" class="btn gris">🔊 Instrucciones</button>
+        <button id="eNuevo" class="btn gris">🔄 Nuevo</button>
+      </div>
       <canvas id="efx"></canvas>
     </section>
   </div>
@@ -1151,7 +1168,17 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
   "use strict";
   const $=id=>document.getElementById(id);
   const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
-  let tablaA=3, baseP=3, vecesP=4, cont=0;
+  let tablaA=3, baseP=3, vecesP=4, cont=0, resultado=0, instrActivo=false;
+
+  // Voz (español latino/neutro)
+  let vozES=null, vozLang="es-MX";
+  function cargarVoz(){ if(!('speechSynthesis' in window)) return; const v=speechSynthesis.getVoices();
+    const pref=["es-mx","es-419","es-us","es-co","es-cr","es-ar","es-cl","es-pe"];
+    vozES=v.find(x=>pref.some(p=>x.lang.toLowerCase().replace('_','-').startsWith(p)))||v.find(x=>/^es/i.test(x.lang)&&!/es[-_]es/i.test(x.lang))||v.find(x=>/es[-_]/i.test(x.lang))||null;
+    vozLang=vozES?vozES.lang:"es-MX"; }
+  if('speechSynthesis' in window){ cargarVoz(); speechSynthesis.onvoiceschanged=cargarVoz; }
+  function decir(txt){ if(!('speechSynthesis' in window)) return; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang=vozLang; if(vozES)u.voice=vozES; u.rate=0.95; u.pitch=1.0; speechSynthesis.speak(u);}catch(e){} }
+  const TXT_INSTR="Debes formar la suma que representa la multiplicación. Con el botón más, agregas el número. Con el botón quitar, quitas el número. Con el botón comprobar, podrás comprobar tu respuesta.";
 
   function ocultarJuego(){
     const h=document.querySelector('header'); if(h)h.style.display='none';
@@ -1191,25 +1218,38 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
   const eo=$('eOtro'); if(eo) eo.addEventListener('click',renderAprende);
 
   function nuevaPractica(){
-    baseP=r(2,5); vecesP=r(2,9); cont=0;
+    baseP=r(2,5); vecesP=r(2,9); cont=0; resultado=0;
     $('ePregunta').textContent = baseP+" × "+vecesP;
     $('eAddN').textContent = baseP;
-    $('eInstr').innerHTML = "Suma el <b>"+baseP+"</b>, <b>"+vecesP+"</b> veces. Toca <b>➕"+baseP+"</b>.";
+    $('eResVal').textContent = "0";
     $('eFeedback').textContent=""; $('eFeedback').className="";
     renderSuma();
   }
   function renderSuma(){
     $('eSuma').innerHTML = cont===0 ? "<span style='opacity:.6'>( toca ➕"+baseP+" )</span>" : Array(cont).fill(baseP).join(" + ");
-    $('eTotalLine').textContent = cont>0 ? ("= "+(baseP*cont)) : "";
   }
+  function setRes(v){ resultado=Math.max(0,Math.min(99,v)); $('eResVal').textContent=resultado; }
+  function holdRepeat(btn, fn){ if(!btn) return; let iv=null, to=null;
+    const start=(e)=>{ if(e&&e.cancelable)e.preventDefault(); fn(); to=setTimeout(()=>{ iv=setInterval(fn,90); },400); };
+    const stop=()=>{ clearTimeout(to); if(iv)clearInterval(iv); iv=null; };
+    btn.addEventListener('mousedown',start); btn.addEventListener('touchstart',start,{passive:false});
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=>btn.addEventListener(ev,stop)); }
+  holdRepeat($('eResUp'), ()=>setRes(resultado+1));
+  holdRepeat($('eResDown'), ()=>setRes(resultado-1));
   const ea=$('eAdd'); if(ea) ea.addEventListener('click',()=>{ if(cont<vecesP+4){ cont++; renderSuma(); $('eFeedback').textContent=""; $('eFeedback').className=""; } });
   const eq=$('eQuitar'); if(eq) eq.addEventListener('click',()=>{ if(cont>0){ cont--; renderSuma(); } });
   const en=$('eNuevo'); if(en) en.addEventListener('click',nuevaPractica);
   const ec=$('eComprobar'); if(ec) ec.addEventListener('click',()=>{
-    const fb=$('eFeedback');
-    if(cont===vecesP){ fb.className="bien"; fb.innerHTML="<span class='emoji'>🎉🥳</span>¡Muy bien! "+Array(vecesP).fill(baseP).join(" + ")+" = <b>"+(baseP*vecesP)+"</b>"; fuegos(); }
-    else if(cont<vecesP){ fb.className="mal"; fb.innerHTML="Sumaste el "+baseP+" solo <b>"+cont+"</b> veces. Necesitas <b>"+vecesP+"</b>."; }
-    else { fb.className="mal"; fb.innerHTML="Sumaste el "+baseP+" <b>"+cont+"</b> veces. Son demasiadas, necesitas <b>"+vecesP+"</b>."; }
+    const fb=$('eFeedback'); const prod=baseP*vecesP, sumaOk=(cont===vecesP), resOk=(resultado===prod);
+    if(sumaOk && resOk){ fb.className="bien"; fb.innerHTML="<span class='emoji'>🎉🥳</span>¡Muy bien! "+Array(vecesP).fill(baseP).join(" + ")+" = <b>"+prod+"</b>"; fuegos(); }
+    else if(!sumaOk && cont<vecesP){ fb.className="mal"; fb.innerHTML="Revisa la suma: sumaste el "+baseP+" solo <b>"+cont+"</b> veces."; }
+    else if(!sumaOk && cont>vecesP){ fb.className="mal"; fb.innerHTML="Revisa la suma: sumaste el "+baseP+" <b>"+cont+"</b> veces, son demasiadas."; }
+    else { fb.className="mal"; fb.innerHTML="La suma está bien 👍. Revisa el <b>resultado</b> que escribiste."; }
+  });
+  const eia=$('eInstrAudio'); if(eia) eia.addEventListener('click',()=>{
+    instrActivo=!instrActivo;
+    if(instrActivo){ eia.classList.remove('off'); eia.textContent="🔊 Instrucciones"; decir(TXT_INSTR); }
+    else { eia.classList.add('off'); eia.textContent="🔇 Instrucciones"; try{ speechSynthesis.cancel(); }catch(e){} }
   });
 
   const fx=$('efx'), fctx=fx?fx.getContext('2d'):null; let parts=[], fxOn=false, fxLast=0;
