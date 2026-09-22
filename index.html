@@ -77,6 +77,32 @@
   .probbtn:hover{transform:translateY(-2px);background:rgba(255,212,0,.3);}
   .plusbtn{background:rgba(192,132,252,.2)!important;border-color:#c084fc!important;color:#e6ccff!important;}
   .plusbtn:hover{background:rgba(192,132,252,.34)!important;}
+  .estrbtn{background:rgba(37,224,214,.18)!important;border-color:#25e0d6!important;color:#aef7f2!important;}
+  .estrbtn:hover{background:rgba(37,224,214,.32)!important;}
+  #estrategias{position:fixed;inset:0;z-index:70;background:radial-gradient(circle at 50% -10%,#1b3a8a 0%,#0a1636 55%,#050b22 100%);display:none;flex-direction:column;align-items:center;padding:10px;overflow:auto;font-family:Arial,Helvetica,sans-serif;}
+  #estrategias.show{display:flex;}
+  #estrategias h2{margin:2px 0;font-size:clamp(18px,4.5vw,28px);color:var(--amarillo);text-shadow:0 3px 0 #b58a00;text-align:center;}
+  #estrategias .esub{font-size:13px;opacity:.85;text-align:center;margin-bottom:4px;max-width:600px;}
+  #estrategias .etabs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
+  #estrategias .etab{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);color:#fff;border-radius:14px 14px 0 0;padding:9px 16px;font-size:15px;font-weight:bold;cursor:pointer;}
+  #estrategias .etab.sel{background:rgba(255,212,0,.16);border-color:var(--amarillo);color:var(--amarillo);}
+  #estrategias .ecard{width:min(96vw,760px);background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.18);border-radius:0 16px 16px 16px;padding:16px;position:relative;min-height:300px;}
+  #estrategias .etablasel{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:15px;margin-bottom:10px;}
+  #estrategias .echip{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:19px;font-weight:bold;cursor:pointer;}
+  #estrategias .echip.sel{border-color:var(--amarillo);background:rgba(255,212,0,.2);color:var(--amarillo);}
+  #estrategias .ebig{font-size:clamp(30px,8vw,46px);font-weight:bold;color:var(--amarillo);text-align:center;margin:6px 0;}
+  #estrategias p{font-size:clamp(15px,3.4vw,18px);line-height:1.5;}
+  #estrategias .esumabig{font-size:clamp(18px,4.4vw,24px);font-weight:bold;text-align:center;background:rgba(255,255,255,.06);border-left:5px solid var(--verde);border-radius:10px;padding:12px;margin:10px 0;word-break:break-word;}
+  #estrategias .eskip{text-align:center;font-size:clamp(16px,3.8vw,20px);color:#8ff0e6;font-weight:bold;letter-spacing:1px;}
+  #ePregunta{font-size:clamp(22px,6vw,34px);font-weight:bold;color:var(--amarillo);text-align:center;margin:2px 0;}
+  #estrategias .esuma{font-size:clamp(22px,5.5vw,32px);font-weight:bold;text-align:center;min-height:44px;background:rgba(255,255,255,.06);border-radius:10px;padding:10px;margin:8px 0;word-break:break-word;}
+  #estrategias .etotal{text-align:center;font-size:clamp(18px,4.4vw,24px);font-weight:bold;color:var(--verde);min-height:26px;}
+  #estrategias .eacc{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
+  #eFeedback{min-height:44px;text-align:center;font-size:clamp(16px,4vw,22px);font-weight:bold;margin-top:8px;}
+  #eFeedback.bien{color:var(--verde);} #eFeedback.mal{color:var(--rojo);}
+  #eFeedback .emoji{font-size:34px;display:block;line-height:1.1;}
+  #efx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:0 16px 16px 16px;}
+  #eAdd{font-size:clamp(20px,5vw,26px)!important;padding:14px 28px!important;}
   #btnMenuJuego{cursor:pointer;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);transition:transform .1s,background .12s;}
   #btnMenuJuego:hover{background:rgba(255,255,255,.22);transform:translateY(-2px);}
   #btnMenuJuego:active{transform:translateY(1px);}
@@ -164,6 +190,7 @@
       </div>
       <button class="probbtn" id="btnAbrirProblemas">📝 Problemas</button>
       <button class="probbtn plusbtn" id="btnNivelMas">➕ Nivel +</button>
+      <button class="probbtn estrbtn" id="btnEstrategias">🧠 Estrategias</button>
       <button class="btn gris" id="btnVozMenu">🔊 Voz de la operación: Activada</button>
       <div class="credito">Elaborado por <b>Alberto Jiménez Ruiz</b><br>Asesor Regional de Matemática · DRE Cartago · DAP 2026</div>
     </div>
@@ -202,6 +229,43 @@
 </div>
 
 <footer>Recurso educativo · Primaria · Tablas de multiplicar con la tortuga</footer>
+
+<!-- ===== Sección Estrategias (suma repetida) ===== -->
+<div id="estrategias">
+  <h2>🧠 Estrategias · Suma repetida</h2>
+  <div class="esub">Multiplicar es sumar el mismo número varias veces (tablas del 2 al 5).</div>
+  <div class="etabs">
+    <button class="etab sel" data-etab="aprende">📖 Aprende</button>
+    <button class="etab" data-etab="practica">✏️ Practica</button>
+  </div>
+  <div class="ecard">
+    <section id="eAprende">
+      <div class="etablasel">Tabla del:
+        <button class="echip" data-t="2">2</button>
+        <button class="echip sel" data-t="3">3</button>
+        <button class="echip" data-t="4">4</button>
+        <button class="echip" data-t="5">5</button>
+      </div>
+      <div id="eEjemplo"></div>
+      <button id="eOtro" class="btn" style="margin-top:6px;">🔁 Otro ejemplo</button>
+    </section>
+    <section id="ePractica" class="hidden">
+      <p id="ePregunta">—</p>
+      <p id="eInstr" style="text-align:center"></p>
+      <div id="eSuma" class="esuma">—</div>
+      <div id="eTotalLine" class="etotal"></div>
+      <div class="eacc">
+        <button id="eAdd" class="btn verde">➕ <span id="eAddN">3</span></button>
+        <button id="eQuitar" class="btn gris">↩️ Quitar</button>
+        <button id="eComprobar" class="btn">✅ Comprobar</button>
+      </div>
+      <div id="eFeedback"></div>
+      <button id="eNuevo" class="btn gris" style="margin-top:8px;">🔄 Nuevo</button>
+      <canvas id="efx"></canvas>
+    </section>
+  </div>
+  <button class="btn gris" id="eMenu" style="margin-top:12px;">🏠 Menú</button>
+</div>
 
 <!-- ===== Sección Problemas ===== -->
 <div id="problemas">
@@ -1078,6 +1142,86 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
   // Si esta hoja se abrió como Problemas o Nivel +
   if(location.hash==='#problemas'){ modoIndependiente(false); }
   else if(location.hash==='#nivelmas'){ modoIndependiente(true); }
+})();
+</script>
+
+<script>
+/* ===== Estrategias: suma repetida ===== */
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const r=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+  let tablaA=3, baseP=3, vecesP=4, cont=0;
+
+  function ocultarJuego(){
+    const h=document.querySelector('header'); if(h)h.style.display='none';
+    const hud=$('hud'); if(hud)hud.style.display='none';
+    const wrap=$('wrap'); if(wrap)wrap.style.display='none';
+    const ft=document.querySelector('footer'); if(ft)ft.style.display='none';
+    document.body.style.justifyContent='flex-start';
+  }
+  function abrir(){ $('estrategias').classList.add('show'); verTab('aprende'); renderAprende(); nuevaPractica(); }
+  const be=$('btnEstrategias'); if(be) be.addEventListener('click',()=>{ const w=window.open(location.href.split('#')[0]+'#estrategias','_blank'); if(!w){ abrir(); } });
+  const em=$('eMenu'); if(em) em.addEventListener('click',()=>{ location.href=location.href.split('#')[0]; });
+  if(location.hash==='#estrategias'){ ocultarJuego(); abrir(); }
+
+  function verTab(t){
+    document.querySelectorAll('#estrategias .etab').forEach(x=>x.classList.toggle('sel',x.dataset.etab===t));
+    $('eAprende').classList.toggle('hidden',t!=='aprende');
+    $('ePractica').classList.toggle('hidden',t!=='practica');
+  }
+  document.querySelectorAll('#estrategias .etab').forEach(tb=>tb.addEventListener('click',()=>verTab(tb.dataset.etab)));
+
+  document.querySelectorAll('#estrategias .echip').forEach(ch=>ch.addEventListener('click',()=>{
+    tablaA=parseInt(ch.dataset.t,10);
+    document.querySelectorAll('#estrategias .echip').forEach(x=>x.classList.toggle('sel',x===ch));
+    renderAprende();
+  }));
+  function renderAprende(){
+    const N=tablaA, M=r(2,6), t=N*M;
+    const suma=Array(M).fill(N).join(" + ");
+    const skip=Array.from({length:M},(_,i)=>N*(i+1)).join(" → ");
+    $('eEjemplo').innerHTML =
+      `<div class="ebig">${N} × ${M}</div>`+
+      `<p>Multiplicar <b>${N} × ${M}</b> significa sumar el <b>${N}</b>, <b>${M} veces</b>:</p>`+
+      `<div class="esumabig">${suma} = <b>${t}</b></div>`+
+      `<p>También puedes contar de <b>${N} en ${N}</b>:</p>`+
+      `<div class="eskip">${skip}</div>`;
+  }
+  const eo=$('eOtro'); if(eo) eo.addEventListener('click',renderAprende);
+
+  function nuevaPractica(){
+    baseP=r(2,5); vecesP=r(2,9); cont=0;
+    $('ePregunta').textContent = baseP+" × "+vecesP;
+    $('eAddN').textContent = baseP;
+    $('eInstr').innerHTML = "Suma el <b>"+baseP+"</b>, <b>"+vecesP+"</b> veces. Toca <b>➕"+baseP+"</b>.";
+    $('eFeedback').textContent=""; $('eFeedback').className="";
+    renderSuma();
+  }
+  function renderSuma(){
+    $('eSuma').innerHTML = cont===0 ? "<span style='opacity:.6'>( toca ➕"+baseP+" )</span>" : Array(cont).fill(baseP).join(" + ");
+    $('eTotalLine').textContent = cont>0 ? ("= "+(baseP*cont)) : "";
+  }
+  const ea=$('eAdd'); if(ea) ea.addEventListener('click',()=>{ if(cont<vecesP+4){ cont++; renderSuma(); $('eFeedback').textContent=""; $('eFeedback').className=""; } });
+  const eq=$('eQuitar'); if(eq) eq.addEventListener('click',()=>{ if(cont>0){ cont--; renderSuma(); } });
+  const en=$('eNuevo'); if(en) en.addEventListener('click',nuevaPractica);
+  const ec=$('eComprobar'); if(ec) ec.addEventListener('click',()=>{
+    const fb=$('eFeedback');
+    if(cont===vecesP){ fb.className="bien"; fb.innerHTML="<span class='emoji'>🎉🥳</span>¡Muy bien! "+Array(vecesP).fill(baseP).join(" + ")+" = <b>"+(baseP*vecesP)+"</b>"; fuegos(); }
+    else if(cont<vecesP){ fb.className="mal"; fb.innerHTML="Sumaste el "+baseP+" solo <b>"+cont+"</b> veces. Necesitas <b>"+vecesP+"</b>."; }
+    else { fb.className="mal"; fb.innerHTML="Sumaste el "+baseP+" <b>"+cont+"</b> veces. Son demasiadas, necesitas <b>"+vecesP+"</b>."; }
+  });
+
+  const fx=$('efx'), fctx=fx?fx.getContext('2d'):null; let parts=[], fxOn=false, fxLast=0;
+  function fuegos(){ if(!fctx) return; const rc=fx.getBoundingClientRect(); fx.width=rc.width; fx.height=rc.height; parts=[];
+    const cols=["#ffd400","#ff4b57","#3ddc84","#25e0d6","#ff9d3d","#c084fc","#ff7bac"];
+    for(let b=0;b<5;b++){ const cx=fx.width*(0.2+Math.random()*0.6), cy=fx.height*(0.2+Math.random()*0.45), col=cols[Math.floor(Math.random()*cols.length)];
+      for(let i=0;i<24;i++){ const a=(i/24)*6.283185, sp=1.5+Math.random()*3; parts.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,col,delay:b*8}); } }
+    if(!fxOn){ fxOn=true; fxLast=performance.now(); requestAnimationFrame(loopFx); } }
+  function loopFx(ts){ const dt=Math.min(40,ts-fxLast); fxLast=ts; fctx.clearRect(0,0,fx.width,fx.height); let vivas=0;
+    for(const p of parts){ if(p.delay>0){p.delay-=1;vivas++;continue;} p.x+=p.vx*(dt/16.67); p.y+=p.vy*(dt/16.67); p.vy+=0.06*(dt/16.67); p.vx*=0.99; p.life-=0.012*(dt/16.67);
+      if(p.life>0){vivas++; fctx.globalAlpha=Math.max(0,p.life); fctx.fillStyle=p.col; fctx.beginPath(); fctx.arc(p.x,p.y,3,0,6.28); fctx.fill();} }
+    fctx.globalAlpha=1; if(vivas>0) requestAnimationFrame(loopFx); else fxOn=false; }
 })();
 </script>
 </body>
