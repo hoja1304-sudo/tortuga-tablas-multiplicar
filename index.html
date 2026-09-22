@@ -1176,7 +1176,7 @@ ol{line-height:1.7;} .fig{margin:10px 0;} .resp{background:#e7f8ee;border:1px so
     vozLang=vozES?vozES.lang:"es-MX"; }
   if('speechSynthesis' in window){ cargarVoz(); speechSynthesis.onvoiceschanged=cargarVoz; }
   function decir(txt){ if(!('speechSynthesis' in window)) return; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(txt); u.lang=vozLang; if(vozES)u.voice=vozES; u.rate=0.95; u.pitch=1.0; speechSynthesis.speak(u);}catch(e){} }
-  const TXT_INSTR="Debes formar la suma que representa la multiplicación. Con el botón más, agregas el número. Con el botón quitar, quitas el número. Con el botón comprobar, podrás comprobar tu respuesta.";
+  const TXT_INSTR="Debes formar la suma que representa la multiplicación. Con el botón más, agregas el número. Con el botón quitar, quitas el número. Con las flechas hacia arriba y hacia abajo, escribes el resultado. Con el botón comprobar, podrás comprobar tu respuesta.";
 
   function ocultarJuego(){
     const h=document.querySelector('header'); if(h)h.style.display='none';
