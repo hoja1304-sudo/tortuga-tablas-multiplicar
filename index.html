@@ -134,7 +134,7 @@
 
 <header><h1>🐢 Tortuga de las tablas de multiplicar</h1></header>
 
-<div id="hud">
+<div id="hud" class="hidden">
   <div class="panel" id="reto">
     <button id="btnAudio" title="Escuchar la operación">🔊</button>
     <div class="txt"><span class="lbl2" id="retoLbl">Atrapa el pez con el resultado</span><span id="operacion">— × — = ?</span></div>
@@ -487,6 +487,7 @@
   }
   function irAMenu(){ estado="menu"; document.getElementById('ovFin').classList.add('hidden');
     document.getElementById('panelVidas').classList.add('hidden'); document.getElementById('btnMenuJuego').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
     document.getElementById('menuTablas').classList.add('hidden');
     document.getElementById('menuEscenario').classList.remove('hidden');
     document.getElementById('ovMenu').classList.remove('hidden'); }
@@ -504,6 +505,7 @@
     document.getElementById('retoLbl').textContent = (escenario==="laberinto")?"Come el número con el resultado":"Atrapa el pez con el resultado";
     document.getElementById('panelVidas').classList.toggle('hidden', escenario!=="oceano");
     document.getElementById('btnMenuJuego').classList.remove('hidden');
+    document.getElementById('hud').classList.remove('hidden');
     pintarRecHUD();
     document.getElementById('ovMenu').classList.add('hidden');
     document.getElementById('ovFin').classList.add('hidden');
